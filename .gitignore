@@ -8,6 +8,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # testing
 /coverage
 
