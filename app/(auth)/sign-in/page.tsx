@@ -1,24 +1,48 @@
 "use client"
 
-import type { FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import Link from "next/link"
 
 import AuthToggle from "@/components/auth-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { authClient } from "@/lib/auth-client"
+import { useRouter } from "next/navigation"
 
 const inputClass =
   "h-11 border-white/10 bg-white/5 text-white placeholder:text-white/40"
 
 const SignInPage = () => {
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const data = Object.fromEntries(formData.entries())
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  const router = useRouter()
 
-    // TODO: integrate sign-in logic here
-    console.log(data)
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setError("")
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
+
+    setLoading(true)
+
+    const { error } = await authClient.signIn.email({
+      email,
+      password,
+      callbackURL: "/",
+    })
+
+    setLoading(false)
+
+    if (error) {
+      setError(error.message ?? "Something went wrong. Please try again.")
+      return
+    }
+
+    router.push("/")
+    router.refresh()
   }
 
   return (
@@ -64,11 +88,14 @@ const SignInPage = () => {
             />
           </div>
 
+          {error && <p className="text-sm text-red-400">{error}</p>}
+
           <Button
             type="submit"
+            disabled={loading}
             className="h-11 w-full rounded-xl bg-[#5b4fe9] text-white hover:bg-[#6c61f0]"
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
