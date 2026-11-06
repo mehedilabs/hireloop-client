@@ -49,10 +49,10 @@ export default function SiteNavbar() {
   }, [])
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#1e1e1f] text-white">
+    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 text-white sm:px-6">
       <nav
         aria-label="Main"
-        className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6"
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-2xl border border-white/10 bg-[#1e1e1f]/90 px-4 shadow-lg shadow-black/40 backdrop-blur-md sm:px-6"
       >
         <Logo />
 
