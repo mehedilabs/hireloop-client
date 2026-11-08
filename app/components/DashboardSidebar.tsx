@@ -23,7 +23,7 @@ import {
   Building2,
   FileText,
   LayoutDashboard,
-  PlusCircle,
+  PlusCircleIcon,
   Settings,
   Users,
   Wallet,
@@ -94,14 +94,14 @@ const menuItemsByRole: Record<Role, MenuItem[]> = {
     {
       id: "manage-jobs",
       name: "Manage Jobs",
-      url: "/dashboard/recruiter/manage-jobs",
+      url: "/dashboard/recruiter/jobs",
       icon: Briefcase,
     },
     {
       id: "add-job",
       name: "Add job",
       url: "/dashboard/recruiter/jobs/new",
-      icon: PlusCircle,
+      icon: PlusCircleIcon,
     },
     {
       id: "applications",
@@ -170,10 +170,15 @@ export function DashboardSidebar() {
         <Link href="/" aria-label="hireloop home" className="inline-block">
           <Image src={logo} alt="hireloop" priority className="h-7 w-auto" />
         </Link>
-        <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#5b4fe9]/30 bg-[#5b4fe9]/10 px-2.5 py-1 text-[11px] font-medium text-[#a79cf8]">
-          <span className="size-1.5 rounded-full bg-[#7c6cf5]" />
-          {ROLE_LABEL[role]} workspace
-        </span>
+
+        {isPending ? (
+          <span className="h-6 w-32 animate-pulse rounded-full bg-white/10" />
+        ) : (
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-[#5b4fe9]/30 bg-[#5b4fe9]/10 px-2.5 py-1 text-[11px] font-medium text-[#a79cf8]">
+            <span className="size-1.5 rounded-full bg-[#7c6cf5]" />
+            {ROLE_LABEL[role]} workspace
+          </span>
+        )}
       </SidebarHeader>
 
       {/* Menu */}
@@ -182,26 +187,36 @@ export function DashboardSidebar() {
           <SidebarGroupLabel className="mb-2 px-3 text-[11px] font-semibold tracking-wider text-white/40 uppercase">
             Application
           </SidebarGroupLabel>
-          <SidebarMenu className="gap-1">
-            {menuItemsByRole[role].map((item) => {
-              const isActive =
-                item.url === `/dashboard/${role}`
-                  ? pathname === item.url
-                  : pathname.startsWith(item.url)
 
-              return (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    isActive={isActive}
-                    render={<a href={item.url} />}
-                    className="relative h-10 gap-3 rounded-xl px-3 text-[14px] font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white data-[active=true]:bg-[#5b4fe9]/15 data-[active=true]:text-white data-[active=true]:before:absolute data-[active=true]:before:top-2 data-[active=true]:before:bottom-2 data-[active=true]:before:left-0 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-[#7c6cf5] [&>svg]:size-[18px] [&>svg]:text-white/40 hover:[&>svg]:text-white data-[active=true]:[&>svg]:text-[#8b7cf8]"
-                  >
-                    <item.icon />
-                    <span>{item.name}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
+          <SidebarMenu className="gap-1">
+            {isPending
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <SidebarMenuItem key={i}>
+                    <div className="flex h-10 animate-pulse items-center gap-3 rounded-xl px-3">
+                      <div className="size-[18px] rounded bg-white/10" />
+                      <div className="h-3 w-24 rounded bg-white/10" />
+                    </div>
+                  </SidebarMenuItem>
+                ))
+              : menuItemsByRole[role].map((item) => {
+                  const isActive =
+                    item.url === `/dashboard/${role}`
+                      ? pathname === item.url
+                      : pathname.startsWith(item.url)
+
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        render={<Link href={item.url} />}
+                        className="relative h-10 gap-3 rounded-xl px-3 text-[14px] font-medium text-white/60 transition-colors hover:bg-white/5 hover:text-white data-[active=true]:bg-[#5b4fe9]/15 data-[active=true]:text-white data-[active=true]:before:absolute data-[active=true]:before:top-2 data-[active=true]:before:bottom-2 data-[active=true]:before:left-0 data-[active=true]:before:w-[3px] data-[active=true]:before:rounded-full data-[active=true]:before:bg-[#7c6cf5] [&>svg]:size-[18px] [&>svg]:text-white/40 hover:[&>svg]:text-white data-[active=true]:[&>svg]:text-[#8b7cf8]"
+                      >
+                        <item.icon />
+                        <span>{item.name}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

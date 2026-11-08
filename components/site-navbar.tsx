@@ -4,7 +4,16 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
-import { ChevronRight, LogOut, Menu } from "lucide-react"
+import {
+  Briefcase,
+  Building2,
+  ChevronRight,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Tag,
+  type LucideIcon,
+} from "lucide-react"
 
 import logo from "@/app/images/logo.png"
 import { cn } from "@/lib/utils"
@@ -18,10 +27,12 @@ import {
 } from "@/components/ui/sheet"
 import { authClient, useSession } from "@/lib/auth-client"
 
-const NAV_LINKS = [
-  { label: "Browse Jobs", href: "/jobs" },
-  { label: "Company", href: "/company" },
-  { label: "Pricing", href: "/pricing" },
+type NavLink = { label: string; href: string; icon: LucideIcon }
+
+const NAV_LINKS: NavLink[] = [
+  { label: "Browse Jobs", href: "/jobs", icon: Briefcase },
+  { label: "Company", href: "/company", icon: Building2 },
+  { label: "Pricing", href: "/pricing", icon: Tag },
 ]
 
 function Logo({ onClick }: { onClick?: () => void }) {
@@ -56,7 +67,7 @@ export default function SiteNavbar() {
 
   const router = useRouter()
   const pathname = usePathname()
-  const { data: session } = useSession()
+  const { data: session, isPending } = useSession()
 
   const fullName = session?.user?.name?.trim() ?? ""
   const initial = fullName.charAt(0).toUpperCase() || "U"
@@ -64,6 +75,24 @@ export default function SiteNavbar() {
     const word = fullName.split(" ")[0] ?? ""
     return word.charAt(0).toUpperCase() + word.slice(1)
   })()
+
+  const rawRole = session?.user?.role
+  const role =
+    rawRole === "recruiter" || rawRole === "admin" ? rawRole : "seeker"
+
+  const links: NavLink[] = session?.user
+    ? [
+        ...NAV_LINKS,
+        {
+          label: "Dashboard",
+          href: `/dashboard/${role}`,
+          icon: LayoutDashboard,
+        },
+      ]
+    : NAV_LINKS
+
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`)
 
   // স্ক্রিন desktop সাইজে গেলে mobile sheet বন্ধ করে দেয়
   useEffect(() => {
@@ -95,19 +124,27 @@ export default function SiteNavbar() {
 
         {/* Desktop */}
         <div className="hidden items-center md:flex">
-          <ul className="flex items-center gap-8 text-[13px] font-medium">
-            {NAV_LINKS.map((link) => {
-              const active = pathname === link.href
+          <ul className="flex items-center gap-1 text-[13px] font-medium">
+            {links.map((link) => {
+              const active = isActive(link.href)
+              const isDashboard = link.label === "Dashboard"
               return (
                 <li key={link.label}>
                   <Link
                     href={link.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "transition-colors hover:text-white",
-                      active ? "text-white" : "text-white/70"
+                      "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 transition-colors",
+                      isDashboard
+                        ? active
+                          ? "bg-[#5b4fe9]/25 text-white"
+                          : "bg-[#5b4fe9]/10 text-[#a79cf8] hover:bg-[#5b4fe9]/20 hover:text-white"
+                        : active
+                          ? "bg-white/10 text-white"
+                          : "text-white/70 hover:bg-white/5 hover:text-white"
                     )}
                   >
+                    {isDashboard && <link.icon className="size-3.5" />}
                     {link.label}
                   </Link>
                 </li>
@@ -115,9 +152,15 @@ export default function SiteNavbar() {
             })}
           </ul>
 
-          <span className="mx-6 h-5 w-px bg-white/20" aria-hidden="true" />
+          <span className="mx-5 h-5 w-px bg-white/20" aria-hidden="true" />
 
-          {session?.user ? (
+          {isPending ? (
+            <div className="flex animate-pulse items-center gap-3">
+              <div className="size-8 rounded-full bg-white/10" />
+              <div className="h-3 w-16 rounded bg-white/10" />
+              <div className="ml-1 h-9 w-24 rounded-xl bg-white/10" />
+            </div>
+          ) : session?.user ? (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -125,11 +168,9 @@ export default function SiteNavbar() {
                   <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-[#1e1e1f] bg-emerald-400" />
                 </div>
 
-                <div className="flex max-w-[130px] flex-col leading-tight">
-                  <span className="truncate text-[13px] font-semibold text-white">
-                    {firstName}
-                  </span>
-                </div>
+                <span className="max-w-[110px] truncate text-[13px] font-semibold text-white">
+                  {firstName}
+                </span>
               </div>
 
               <button
@@ -184,8 +225,9 @@ export default function SiteNavbar() {
 
             {/* Links */}
             <ul className="flex flex-1 flex-col gap-1 overflow-y-auto px-4 py-4">
-              {NAV_LINKS.map((link) => {
-                const active = pathname === link.href
+              {links.map((link) => {
+                const active = isActive(link.href)
+                const isDashboard = link.label === "Dashboard"
                 return (
                   <li key={link.label}>
                     <Link
@@ -193,17 +235,27 @@ export default function SiteNavbar() {
                       onClick={close}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium transition-colors",
+                        "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors",
                         active
                           ? "bg-[#5b4fe9]/20 text-white"
                           : "text-white/80 hover:bg-white/5 hover:text-white"
                       )}
                     >
-                      {link.label}
+                      <span
+                        className={cn(
+                          "flex size-9 shrink-0 items-center justify-center rounded-lg transition-colors",
+                          active || isDashboard
+                            ? "bg-[#5b4fe9]/30 text-[#a79cf8]"
+                            : "bg-white/5 text-white/50"
+                        )}
+                      >
+                        <link.icon className="size-[18px]" />
+                      </span>
+                      <span className="flex-1">{link.label}</span>
                       <ChevronRight
                         className={cn(
                           "size-4",
-                          active ? "text-[#7c6cf5]" : "text-white/30"
+                          active ? "text-[#7c6cf5]" : "text-white/25"
                         )}
                       />
                     </Link>
@@ -213,7 +265,18 @@ export default function SiteNavbar() {
             </ul>
 
             <div className="space-y-3 border-t border-white/10 p-4">
-              {session?.user ? (
+              {isPending ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                    <div className="size-11 rounded-full bg-white/10" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-24 rounded bg-white/10" />
+                      <div className="h-2.5 w-32 rounded bg-white/10" />
+                    </div>
+                  </div>
+                  <div className="h-11 rounded-xl bg-white/10" />
+                </div>
+              ) : session?.user ? (
                 <>
                   <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3">
                     <Avatar letter={initial} size="lg" />
