@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
+
 import { useRouter } from "next/navigation"
 import {
   Briefcase,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { createJob } from "@/lib/actions/jobs"
 
 const JOB_CATEGORIES = [
   "Engineering",
@@ -40,7 +41,7 @@ const JOB_TYPES = ["Full-time", "Part-time", "Remote", "Contract", "Internship"]
 
 const CURRENCIES = ["PHP", "USD", "EUR", "GBP", "SGD"]
 
-type JobForm = {
+export type JobForm = {
   title: string
   category: string
   type: string
@@ -155,8 +156,10 @@ export default function NewJobPage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    const result = await createJob(form)
 
     setSubmitted(true)
   }
