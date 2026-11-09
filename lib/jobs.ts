@@ -10,7 +10,7 @@ export type JobStatus = "Active" | "Closed" | "Draft"
 
 /** A saved job post: everything the form collects plus what the table shows. */
 export type JobPost = JobForm & {
-  id: string
+  _id: string
   company: string
   status: JobStatus
   applicants: number
