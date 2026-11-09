@@ -1,13 +1,9 @@
-import HeroSection from "@/components/hero-section"
-import SiteFooter from "@/components/site-footer"
-import SiteNavbar from "@/components/site-navbar"
+import Hero from "@/components/hero"
 
-export default function Home() {
+export default function Page() {
   return (
     <main>
-      <SiteNavbar />
-      <HeroSection />
-      <SiteFooter />
+      <Hero />
     </main>
   )
 }
