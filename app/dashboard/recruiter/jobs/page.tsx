@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DUMMY_JOBS, type JobPost, type JobStatus } from "@/lib/jobs"
+import { type JobPost, type JobStatus } from "@/lib/jobs"
 import { cn } from "@/lib/utils"
 
 /** Category colour + icon, taken from the Figma rows. */
@@ -136,7 +136,8 @@ function StatusBadge({ status }: { status: JobStatus }) {
 }
 
 export default function ManageJobsPage() {
-  const [jobs, setJobs] = React.useState<JobPost[]>(DUMMY_JOBS)
+  // TODO: load the recruiter's jobs from MongoDB and call setJobs(...)
+  const [jobs, setJobs] = React.useState<JobPost[]>([])
   const [confirmId, setConfirmId] = React.useState<string | null>(null)
   // null on the server, the real time on the client (see readNow above).
   const now = React.useSyncExternalStore(subscribeNow, readNow, serverNow)
