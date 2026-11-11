@@ -8,13 +8,11 @@ import {
   CheckCircle2,
   FileText,
   MapPin,
-  type LucideIcon,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -23,127 +21,30 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
-import { JobStatus } from "@/lib/jobs"
 import { toast } from "@/components/ui/toast"
+import { cn } from "@/lib/utils"
+import {
+  CURRENCIES,
+  JOB_CATEGORIES,
+  JOB_TYPES,
+  initialForm,
+  type JobForm,
+} from "@/lib/jobs"
+import {
+  FormField,
+  FormSection,
+} from "@/app/components/form/FormSection"
+import {
+  inputClasses,
+  selectClasses,
+  selectContentClasses,
+  textareaClasses,
+} from "@/app/components/form/styles"
 
-const JOB_CATEGORIES = [
-  "Engineering",
-  "Design",
-  "Marketing",
-  "Sales",
-  "Finance",
-  "Customer Support",
-  "Human Resources",
-  "Operations",
-]
-
-const JOB_TYPES = ["Full-time", "Part-time", "Remote", "Contract", "Internship"]
-
-const CURRENCIES = ["PHP", "USD", "EUR", "GBP", "SGD"]
-
-export type JobForm = {
-  title: string
-  category: string
-  type: string
-  salaryMin: string
-  salaryMax: string
-  currency: string
-  city: string
-  country: string
-  remote: boolean
-  deadline: string
-  responsibilities: string
-  requirements: string
-  benefits: string
-  status: JobStatus
-  applicants: number
-}
-
-const initialForm: JobForm = {
-  title: "",
-  category: "",
-  type: "",
-  salaryMin: "",
-  salaryMax: "",
-  currency: "PHP",
-  city: "",
-  country: "",
-  remote: false,
-  deadline: "",
-  responsibilities: "",
-  requirements: "",
-  benefits: "",
-  applicants: 0,
-  status: "Active",
-}
-
-const inputClasses =
-  "h-10 rounded-lg border-white/10 bg-[#0c0c0f] px-3 text-[13px] text-[#ededef] placeholder:text-[#6e6e78] transition-colors hover:border-white/20 focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 disabled:cursor-not-allowed disabled:opacity-40 md:text-[13px] dark:bg-[#0c0c0f] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [&[type=number]]:[appearance:textfield]"
-
-const selectClasses =
-  "w-full rounded-lg border-white/10 bg-[#0c0c0f] px-3 text-[13px] text-[#ededef] transition-colors hover:border-white/20 data-placeholder:text-[#6e6e78] data-[size=default]:h-10 focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 dark:bg-[#0c0c0f]"
-
-const selectContentClasses =
-  "rounded-lg border-white/10 bg-[#1a1a1f] text-[#ededef] shadow-xl ring-white/10"
-
-const textareaClasses =
-  "rounded-lg border-white/10 bg-[#0c0c0f] px-3 py-2.5 text-[13px] leading-relaxed text-[#ededef] placeholder:text-[#6e6e78] transition-colors hover:border-white/20 focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 md:text-[13px] dark:bg-[#0c0c0f]"
-
-function Section({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: LucideIcon
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="rounded-xl border border-white/[0.07] bg-[#141418]">
-      <div className="flex items-center gap-2.5 border-b border-white/[0.07] px-4 py-3">
-        <span className="flex size-7 items-center justify-center rounded-lg bg-[#5b4fe9]/15 text-[#a79cf8] ring-1 ring-[#5b4fe9]/25">
-          <Icon className="size-3.5" />
-        </span>
-        <h2 className="text-[14px] font-semibold tracking-tight text-[#ededef]">
-          {title}
-        </h2>
-      </div>
-      <div className="grid gap-3.5 p-4 sm:grid-cols-2">{children}</div>
-    </section>
-  )
-}
-
-function Field({
-  label,
-  htmlFor,
-  full = false,
-  required = false,
-  hint,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  full?: boolean
-  required?: boolean
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className={cn("space-y-1.5", full && "sm:col-span-2")}>
-      <Label
-        htmlFor={htmlFor}
-        className="text-[12px] font-medium text-[#c8c8d0]"
-      >
-        {label}
-        {required ? <span className="ml-0.5 text-[#f87171]">*</span> : null}
-      </Label>
-      {children}
-      {hint ? <p className="text-[11px] text-[#6e6e78]">{hint}</p> : null}
-    </div>
-  )
-}
+// The single JobForm definition lives in @/lib/jobs; re-export it here so
+// existing imports from this page keep working.
+export type { JobForm }
 
 export default function NewJobPage() {
   const router = useRouter()
@@ -195,8 +96,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Job Info */}
-        <Section icon={Briefcase} title="Job Info">
-          <Field label="Job Title" htmlFor="title" required full>
+        <FormSection icon={Briefcase} title="Job Info">
+          <FormField label="Job Title" htmlFor="title" required full>
             <Input
               id="title"
               name="title"
@@ -206,9 +107,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               required
               className={inputClasses}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Category">
+          <FormField label="Category">
             <Select
               value={form.category}
               onValueChange={(value) => update("category", value ?? "")}
@@ -224,9 +125,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 ))}
               </SelectContent>
             </Select>
-          </Field>
+          </FormField>
 
-          <Field label="Job Type">
+          <FormField label="Job Type">
             <Select
               value={form.type}
               onValueChange={(value) => update("type", value ?? "")}
@@ -242,11 +143,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 ))}
               </SelectContent>
             </Select>
-          </Field>
+          </FormField>
 
           {/* Salary row */}
           <div className="grid grid-cols-[88px_1fr_1fr] gap-3 sm:col-span-2">
-            <Field label="Currency">
+            <FormField label="Currency">
               <Select
                 value={form.currency}
                 onValueChange={(value) => update("currency", value ?? "")}
@@ -262,9 +163,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                   ))}
                 </SelectContent>
               </Select>
-            </Field>
+            </FormField>
 
-            <Field label="Salary Min" htmlFor="salaryMin">
+            <FormField label="Salary Min" htmlFor="salaryMin">
               <Input
                 id="salaryMin"
                 name="salaryMin"
@@ -275,9 +176,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 placeholder="30000"
                 className={inputClasses}
               />
-            </Field>
+            </FormField>
 
-            <Field label="Salary Max" htmlFor="salaryMax">
+            <FormField label="Salary Max" htmlFor="salaryMax">
               <Input
                 id="salaryMax"
                 name="salaryMax"
@@ -288,10 +189,10 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                 placeholder="50000"
                 className={inputClasses}
               />
-            </Field>
+            </FormField>
           </div>
 
-          <Field
+          <FormField
             label="Application Deadline"
             htmlFor="deadline"
             full
@@ -305,11 +206,11 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               onChange={onChange}
               className={cn(inputClasses, "[color-scheme:dark]")}
             />
-          </Field>
-        </Section>
+          </FormField>
+        </FormSection>
 
         {/* Location */}
-        <Section icon={MapPin} title="Location">
+        <FormSection icon={MapPin} title="Location">
           <label
             htmlFor="remote"
             className={cn(
@@ -330,7 +231,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             </span>
           </label>
 
-          <Field label="City" htmlFor="city">
+          <FormField label="City" htmlFor="city">
             <Input
               id="city"
               name="city"
@@ -340,9 +241,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               disabled={form.remote}
               className={inputClasses}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Country" htmlFor="country">
+          <FormField label="Country" htmlFor="country">
             <Input
               id="country"
               name="country"
@@ -352,12 +253,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               disabled={form.remote}
               className={inputClasses}
             />
-          </Field>
-        </Section>
+          </FormField>
+        </FormSection>
 
         {/* Job Description */}
-        <Section icon={FileText} title="Job Description">
-          <Field
+        <FormSection icon={FileText} title="Job Description">
+          <FormField
             label="Responsibilities"
             htmlFor="responsibilities"
             required
@@ -376,9 +277,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               }
               className={cn(textareaClasses, "min-h-[96px]")}
             />
-          </Field>
+          </FormField>
 
-          <Field
+          <FormField
             label="Requirements"
             htmlFor="requirements"
             required
@@ -397,9 +298,9 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               }
               className={cn(textareaClasses, "min-h-[96px]")}
             />
-          </Field>
+          </FormField>
 
-          <Field label="Benefits" htmlFor="benefits" full hint="Optional.">
+          <FormField label="Benefits" htmlFor="benefits" full hint="Optional.">
             <Textarea
               id="benefits"
               name="benefits"
@@ -409,8 +310,8 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               placeholder="Health insurance, 13th month pay, remote stipend"
               className={cn(textareaClasses, "min-h-[64px]")}
             />
-          </Field>
-        </Section>
+          </FormField>
+        </FormSection>
 
         {/* Success message */}
         {submitted ? (

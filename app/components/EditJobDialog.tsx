@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -28,111 +27,26 @@ import {
 } from "@/components/ui/dialog"
 
 import { cn } from "@/lib/utils"
-import type { JobPost, JobForm } from "@/lib/jobs"
+import {
+  CURRENCIES,
+  getFormData,
+  JOB_CATEGORIES,
+  JOB_TYPES,
+  type JobPost,
+  type JobForm,
+} from "@/lib/jobs"
 import { updateJob } from "@/lib/actions/jobs"
 import { toast } from "@/components/ui/toast"
-
-const JOB_CATEGORIES = [
-  "Engineering",
-  "Design",
-  "Marketing",
-  "Sales",
-  "Finance",
-  "Customer Support",
-  "Human Resources",
-  "Operations",
-]
-
-const JOB_TYPES = ["Full-time", "Part-time", "Remote", "Contract", "Internship"]
-
-const CURRENCIES = ["PHP", "USD", "EUR", "GBP", "SGD"]
-
-const inputClasses =
-  "h-10 rounded-lg border-white/10 bg-[#0c0c0f] px-3 text-[13px] text-[#ededef] placeholder:text-[#6e6e78] hover:border-white/20 focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 dark:bg-[#0c0c0f]"
-
-const selectClasses =
-  "w-full rounded-lg border-white/10 bg-[#0c0c0f] px-3 text-[13px] text-[#ededef] data-placeholder:text-[#6e6e78] data-[size=default]:h-10 focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 dark:bg-[#0c0c0f]"
-
-const selectContentClasses =
-  "rounded-lg border-white/10 bg-[#1a1a1f] text-[#ededef] shadow-xl"
-
-const textareaClasses =
-  "rounded-lg border-white/10 bg-[#0c0c0f] px-3 py-2.5 text-[13px] leading-relaxed text-[#ededef] placeholder:text-[#6e6e78] focus-visible:border-[#5b4fe9] focus-visible:ring-[3px] focus-visible:ring-[#5b4fe9]/25 dark:bg-[#0c0c0f]"
-
-function getFormData(job: JobPost): JobForm {
-  return {
-    title: job.title ?? "",
-    category: job.category ?? "",
-    type: job.type ?? "",
-    salaryMin: job.salaryMin ?? "",
-    salaryMax: job.salaryMax ?? "",
-    currency: job.currency ?? "PHP",
-    city: job.city ?? "",
-    country: job.country ?? "",
-    remote: job.remote ?? false,
-    deadline: job.deadline ?? "",
-    responsibilities: job.responsibilities ?? "",
-    requirements: job.requirements ?? "",
-    benefits: job.benefits ?? "",
-    status: job.status ?? "Active",
-    applicants: job.applicants ?? 0,
-  }
-}
-
-function Section({
-  icon: Icon,
-  title,
-  children,
-}: {
-  icon: React.ElementType
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="rounded-xl border border-white/[0.07] bg-[#141418]">
-      <div className="flex items-center gap-2.5 border-b border-white/[0.07] px-4 py-3">
-        <span className="flex size-7 items-center justify-center rounded-lg bg-[#5b4fe9]/15 text-[#a79cf8]">
-          <Icon className="size-3.5" />
-        </span>
-        <h3 className="text-[14px] font-semibold text-[#ededef]">{title}</h3>
-      </div>
-
-      <div className="grid gap-3.5 p-4 sm:grid-cols-2">{children}</div>
-    </section>
-  )
-}
-
-function Field({
-  label,
-  htmlFor,
-  full = false,
-  required = false,
-  hint,
-  children,
-}: {
-  label: string
-  htmlFor?: string
-  full?: boolean
-  required?: boolean
-  hint?: string
-  children: React.ReactNode
-}) {
-  return (
-    <div className={cn("space-y-1.5", full && "sm:col-span-2")}>
-      <Label
-        htmlFor={htmlFor}
-        className="text-[12px] font-medium text-[#c8c8d0]"
-      >
-        {label}
-        {required && <span className="ml-0.5 text-[#f87171]">*</span>}
-      </Label>
-
-      {children}
-
-      {hint && <p className="text-[11px] text-[#6e6e78]">{hint}</p>}
-    </div>
-  )
-}
+import {
+  FormField,
+  FormSection,
+} from "@/app/components/form/FormSection"
+import {
+  inputClasses,
+  selectClasses,
+  selectContentClasses,
+  textareaClasses,
+} from "@/app/components/form/styles"
 
 export function EditJobDialog({
   job,
@@ -239,8 +153,8 @@ export function EditJobDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Section icon={Briefcase} title="Job Info">
-            <Field label="Job Title" htmlFor="edit-title" required full>
+          <FormSection icon={Briefcase} title="Job Info">
+            <FormField label="Job Title" htmlFor="edit-title" required full>
               <Input
                 id="edit-title"
                 name="title"
@@ -249,9 +163,9 @@ export function EditJobDialog({
                 required
                 className={inputClasses}
               />
-            </Field>
+            </FormField>
 
-            <Field label="Category">
+            <FormField label="Category">
               <Select
                 value={form.category}
                 onValueChange={(value) => update("category", value ?? "")}
@@ -267,9 +181,9 @@ export function EditJobDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </Field>
+            </FormField>
 
-            <Field label="Job Type">
+            <FormField label="Job Type">
               <Select
                 value={form.type}
                 onValueChange={(value) => update("type", value ?? "")}
@@ -285,10 +199,10 @@ export function EditJobDialog({
                   ))}
                 </SelectContent>
               </Select>
-            </Field>
+            </FormField>
 
             <div className="grid grid-cols-[88px_1fr_1fr] gap-3 sm:col-span-2">
-              <Field label="Currency">
+              <FormField label="Currency">
                 <Select
                   value={form.currency}
                   onValueChange={(value) => update("currency", value ?? "")}
@@ -304,9 +218,9 @@ export function EditJobDialog({
                     ))}
                   </SelectContent>
                 </Select>
-              </Field>
+              </FormField>
 
-              <Field label="Salary Min" htmlFor="edit-salaryMin">
+              <FormField label="Salary Min" htmlFor="edit-salaryMin">
                 <Input
                   id="edit-salaryMin"
                   name="salaryMin"
@@ -316,9 +230,9 @@ export function EditJobDialog({
                   onChange={onChange}
                   className={inputClasses}
                 />
-              </Field>
+              </FormField>
 
-              <Field label="Salary Max" htmlFor="edit-salaryMax">
+              <FormField label="Salary Max" htmlFor="edit-salaryMax">
                 <Input
                   id="edit-salaryMax"
                   name="salaryMax"
@@ -328,10 +242,10 @@ export function EditJobDialog({
                   onChange={onChange}
                   className={inputClasses}
                 />
-              </Field>
+              </FormField>
             </div>
 
-            <Field label="Application Deadline" htmlFor="edit-deadline" full>
+            <FormField label="Application Deadline" htmlFor="edit-deadline" full>
               <Input
                 id="edit-deadline"
                 name="deadline"
@@ -340,10 +254,10 @@ export function EditJobDialog({
                 onChange={onChange}
                 className={cn(inputClasses, "[color-scheme:dark]")}
               />
-            </Field>
-          </Section>
+            </FormField>
+          </FormSection>
 
-          <Section icon={MapPin} title="Location">
+          <FormSection icon={MapPin} title="Location">
             <label
               htmlFor="edit-remote"
               className={cn(
@@ -367,7 +281,7 @@ export function EditJobDialog({
               </span>
             </label>
 
-            <Field label="City" htmlFor="edit-city">
+            <FormField label="City" htmlFor="edit-city">
               <Input
                 id="edit-city"
                 name="city"
@@ -376,9 +290,9 @@ export function EditJobDialog({
                 disabled={form.remote}
                 className={inputClasses}
               />
-            </Field>
+            </FormField>
 
-            <Field label="Country" htmlFor="edit-country">
+            <FormField label="Country" htmlFor="edit-country">
               <Input
                 id="edit-country"
                 name="country"
@@ -387,11 +301,11 @@ export function EditJobDialog({
                 disabled={form.remote}
                 className={inputClasses}
               />
-            </Field>
-          </Section>
+            </FormField>
+          </FormSection>
 
-          <Section icon={FileText} title="Job Description">
-            <Field
+          <FormSection icon={FileText} title="Job Description">
+            <FormField
               label="Responsibilities"
               htmlFor="edit-responsibilities"
               required
@@ -406,9 +320,9 @@ export function EditJobDialog({
                 required
                 className={cn(textareaClasses, "min-h-[96px]")}
               />
-            </Field>
+            </FormField>
 
-            <Field
+            <FormField
               label="Requirements"
               htmlFor="edit-requirements"
               required
@@ -423,9 +337,9 @@ export function EditJobDialog({
                 required
                 className={cn(textareaClasses, "min-h-[96px]")}
               />
-            </Field>
+            </FormField>
 
-            <Field label="Benefits" htmlFor="edit-benefits" full>
+            <FormField label="Benefits" htmlFor="edit-benefits" full>
               <Textarea
                 id="edit-benefits"
                 name="benefits"
@@ -434,8 +348,8 @@ export function EditJobDialog({
                 rows={2}
                 className={cn(textareaClasses, "min-h-[64px]")}
               />
-            </Field>
-          </Section>
+            </FormField>
+          </FormSection>
 
           <DialogFooter className="flex-row justify-end">
             <Button

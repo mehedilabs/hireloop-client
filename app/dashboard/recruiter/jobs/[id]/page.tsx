@@ -7,138 +7,37 @@ import {
   CalendarClock,
   CalendarDays,
   Check,
-  Code,
-  DollarSign,
   Gift,
-  Headphones,
   Laptop,
   ListChecks,
   MapPin,
-  Megaphone,
-  Palette,
-  Pencil,
-  Settings,
   Tag,
-  TrendingUp,
   Users,
   Wallet,
   type LucideIcon,
 } from "lucide-react"
 
-import { getJobById } from "@/lib/api/jobs"
-import type { JobPost, JobStatus } from "@/lib/jobs"
-import { cn } from "@/lib/utils"
+import { Chip } from "@/app/components/jobs/Chip"
+import { CategoryTile } from "@/app/components/jobs/CategoryTile"
+import { StatusBadge } from "@/app/components/jobs/StatusBadge"
 import { EditJobDialog } from "@/app/components/EditJobDialog"
+import { getJobById } from "@/lib/api/jobs"
+import {
+  categoryStyle,
+  deadlineInfo,
+  formatDate,
+  formatLocation,
+  formatPosted,
+  formatSalary,
+  type JobPost,
+} from "@/lib/jobs"
+import { cn } from "@/lib/utils"
 
 type JobDetailsPageProps = {
   params: Promise<{ id: string }>
 }
 
-const CATEGORY_STYLES: Record<string, { color: string; icon: LucideIcon }> = {
-  Engineering: { color: "#38bdf8", icon: Code },
-  Design: { color: "#f97316", icon: Palette },
-  Marketing: { color: "#c3c0ff", icon: Megaphone },
-  Sales: { color: "#4ade80", icon: TrendingUp },
-  Finance: { color: "#fbbf24", icon: DollarSign },
-  "Customer Support": { color: "#22d3ee", icon: Headphones },
-  "Human Resources": { color: "#f472b6", icon: Users },
-  Operations: { color: "#818cf8", icon: Settings },
-}
-
-const STATUS_CLASSES: Record<JobStatus, string> = {
-  Active: "bg-[#14532d]/40 text-[#4ade80]",
-  expired: "bg-[#1f1f1f] text-[#a0a0ab]",
-}
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  PHP: "₱",
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  SGD: "S$",
-}
-
 /* ---------- helpers ---------- */
-
-function parseIso(iso: string) {
-  const [y, m, d] = iso.split("-").map(Number)
-  if (!y || !m || !d) return null
-  return new Date(y, m - 1, d)
-}
-
-function formatDate(iso: string) {
-  if (!iso) return "—"
-  const date = parseIso(iso)
-  if (!date) return iso
-
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  })
-}
-
-function formatSalary(job: JobPost) {
-  const symbol = CURRENCY_SYMBOLS[job.currency] ?? job.currency
-  const min = Number(job.salaryMin)
-  const max = Number(job.salaryMax)
-
-  if (!min && !max) return "Not specified"
-
-  const fmt = (n: number) => n.toLocaleString("en-US")
-
-  if (min && max) return `${symbol}${fmt(min)} – ${symbol}${fmt(max)}`
-
-  return `${symbol}${fmt(min || max)}`
-}
-
-function formatLocation(job: JobPost) {
-  const place = [job.city, job.country].filter(Boolean).join(", ")
-
-  if (job.remote) return place ? `Remote (${place})` : "Remote"
-
-  return place || "Not specified"
-}
-
-function formatPosted(iso?: string) {
-  if (!iso) return ""
-
-  const date = parseIso(iso)
-  if (!date) return ""
-
-  const days = Math.floor((Date.now() - date.getTime()) / 86400000)
-
-  if (days <= 0) return "Posted today"
-  if (days === 1) return "Posted 1 day ago"
-  if (days < 7) return `Posted ${days} days ago`
-
-  const weeks = Math.floor(days / 7)
-
-  if (weeks < 5) return `Posted ${weeks}w ago`
-
-  return `Posted ${Math.floor(days / 30)}mo ago`
-}
-
-function deadlineInfo(iso: string) {
-  if (!iso) {
-    return { text: "Open until filled", className: "text-[#8a8a95]" }
-  }
-
-  const end = parseIso(iso)
-  if (!end) return { text: "", className: "" }
-
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const days = Math.round((end.getTime() - today.getTime()) / 86400000)
-
-  if (days < 0) return { text: "Deadline passed", className: "text-red-400" }
-  if (days === 0) return { text: "Closes today", className: "text-amber-400" }
-  if (days <= 7)
-    return { text: `${days} days left`, className: "text-amber-400" }
-
-  return { text: `${days} days left`, className: "text-[#8a8a95]" }
-}
 
 function toLines(text: string) {
   return (text ?? "")
@@ -167,10 +66,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
     notFound()
   }
 
-  const { color, icon: CategoryIcon } = CATEGORY_STYLES[job.category] ?? {
-    color: "#a0a0ab",
-    icon: Settings,
-  }
+  const { color } = categoryStyle(job.category)
 
   const deadline = deadlineInfo(job.deadline)
   const responsibilities = toLines(job.responsibilities)
@@ -206,12 +102,11 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
           <div className="p-4 sm:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div className="flex min-w-0 items-start gap-3">
-                <span
-                  className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] sm:size-12 sm:rounded-xl"
-                  style={{ color, backgroundColor: `${color}1a` }}
-                >
-                  <CategoryIcon className="size-5 sm:size-6" />
-                </span>
+                <CategoryTile
+                  category={job.category}
+                  className="sm:size-12 sm:rounded-xl"
+                  iconClassName="size-5 sm:size-6"
+                />
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -222,15 +117,10 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                       {job.category}
                     </span>
 
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium sm:gap-1.5 sm:px-2.5 sm:text-[11px]",
-                        STATUS_CLASSES[job.status]
-                      )}
-                    >
-                      <span className="size-1.5 rounded-full bg-current" />
-                      {job.status}
-                    </span>
+                    <StatusBadge
+                      status={job.status}
+                      className="h-auto gap-1 px-2 py-0.5 sm:gap-1.5 sm:px-2.5 sm:text-[11px]"
+                    />
                   </div>
 
                   <h1 className="mt-2 text-lg leading-tight font-semibold tracking-tight break-words sm:mt-2.5 sm:text-[26px]">
@@ -266,7 +156,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             <div className="mt-4 flex flex-wrap justify-center gap-1.5 border-t border-[#232327] pt-4 sm:mt-5 sm:gap-2 sm:pt-5 md:justify-start">
               <Chip icon={Briefcase}>{job.type}</Chip>
               <Chip icon={Laptop}>{job.remote ? "Remote" : "On-site"}</Chip>
-              <Chip icon={MapPin}>{formatLocation(job)}</Chip>
+              <Chip icon={MapPin}>{formatLocation(job, "Not specified")}</Chip>
             </div>
           </div>
         </header>
@@ -294,9 +184,11 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
           <StatCard
             icon={CalendarDays}
             label="Posted"
-            value={formatDate(job.datePosted)}
-            sub={formatPosted(job.datePosted)}
-            subClassName="text-[#8a8a95]"
+            value={new Date(job.datePosted).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}
           />
         </div>
 
@@ -320,12 +212,9 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               <Section icon={Gift} title="Benefits">
                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {benefits.map((benefit) => (
-                    <span
-                      key={benefit}
-                      className="rounded-full border border-[#2a2a2f] bg-[#1c1c1f] px-2.5 py-1.5 text-[11px] text-[#d4d4d8] sm:px-3 sm:text-[13px]"
-                    >
+                    <Chip key={benefit} className="font-normal sm:text-[13px]">
                       {benefit}
-                    </span>
+                    </Chip>
                   ))}
                 </div>
               </Section>
@@ -355,7 +244,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               <OverviewRow
                 icon={MapPin}
                 label="Location"
-                value={formatLocation(job)}
+                value={formatLocation(job, "Not specified")}
               />
               <OverviewRow
                 icon={Building2}
@@ -372,21 +261,6 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 }
 
 /* ---------- small components ---------- */
-
-function Chip({
-  icon: Icon,
-  children,
-}: {
-  icon: LucideIcon
-  children: React.ReactNode
-}) {
-  return (
-    <span className="inline-flex min-w-0 items-center gap-1 rounded-full border border-[#2a2a2f] bg-[#1c1c1f] px-2.5 py-1.5 text-[11px] font-medium text-[#d4d4d8] sm:gap-1.5 sm:px-3 sm:text-xs">
-      <Icon className="size-3 shrink-0 text-[#8a8a95]" />
-      <span className="break-words">{children}</span>
-    </span>
-  )
-}
 
 function StatCard({
   icon: Icon,

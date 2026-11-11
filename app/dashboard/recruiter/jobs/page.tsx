@@ -1,49 +1,21 @@
 import Link from "next/link"
-import {
-  Code,
-  DollarSign,
-  Headphones,
-  Eye,
-  MapPin,
-  Megaphone,
-  Palette,
-  Pencil,
-  Plus,
-  Settings,
-  TrendingUp,
-  Users,
-  type LucideIcon,
-} from "lucide-react"
+import { Eye, MapPin, Plus, Users, type LucideIcon } from "lucide-react"
 
-import { type JobPost, type JobStatus } from "@/lib/jobs"
-import { cn } from "@/lib/utils"
-import { getJobs } from "@/lib/api/jobs"
-import { DeleteJobDialog } from "@/app/components/DeleteDialog"
+import { CategoryTile } from "@/app/components/jobs/CategoryTile"
+import { StatusBadge } from "@/app/components/jobs/StatusBadge"
 import { EditJobDialog } from "@/app/components/EditJobDialog"
-
-const CATEGORY_STYLES: Record<string, { color: string; icon: LucideIcon }> = {
-  Engineering: { color: "#38bdf8", icon: Code },
-  Design: { color: "#f97316", icon: Palette },
-  Marketing: { color: "#c3c0ff", icon: Megaphone },
-  Sales: { color: "#4ade80", icon: TrendingUp },
-  Finance: { color: "#fbbf24", icon: DollarSign },
-  "Customer Support": { color: "#22d3ee", icon: Headphones },
-  "Human Resources": { color: "#f472b6", icon: Users },
-  Operations: { color: "#818cf8", icon: Settings },
-}
-
-const STATUS_CLASSES: Record<JobStatus, string> = {
-  Active: "bg-[#14532d]/40 text-[#4ade80]",
-  expired: "bg-[#1f1f1f] text-[#a0a0ab]",
-}
-
-const CURRENCY_SYMBOLS: Record<string, string> = {
-  PHP: "₱",
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  SGD: "S$",
-}
+import { DeleteJobDialog } from "@/app/components/DeleteDialog"
+import { getJobs } from "@/lib/api/jobs"
+import {
+  categoryStyle,
+  formatDate,
+  formatLocation,
+  formatPosted,
+  formatSalary,
+  getJobStatus,
+  type JobPost,
+} from "@/lib/jobs"
+import { cn } from "@/lib/utils"
 
 const headingClass =
   "px-4 py-4 text-xs font-semibold tracking-wide text-white/50 uppercase"
@@ -53,103 +25,51 @@ const cellClass = "px-4 py-4"
 const iconButtonClass =
   "flex size-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#1A1A1F] text-white/60 transition-all hover:border-[#5c53fe]/50 hover:bg-[#5c53fe]/10 hover:text-white"
 
-function categoryStyle(category: string) {
-  return (
-    CATEGORY_STYLES[category] ?? {
-      color: "#a0a0ab",
-      icon: Settings,
-    }
-  )
+/** Rows of the mobile card's two-column detail grid. */
+type CardField = {
+  label: string
+  ddClass: string
+  icon?: LucideIcon
+  iconClass?: string
+  value: (job: JobPost) => string
 }
 
-function formatDate(iso: string) {
-  if (!iso) return "—"
-
-  const [y, m, d] = iso.split("-").map(Number)
-
-  if (!y || !m || !d) return iso
-
-  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  })
-}
-
-function getJobStatus(job: JobPost): JobStatus {
-  if (job.status === "expired") return "expired"
-  if (job.status !== "Active" || !job.deadline) return job.status
-
-  const [y, m, d] = job.deadline.split("-").map(Number)
-
-  if (!y || !m || !d) return job.status
-
-  const deadlineDate = new Date(y, m - 1, d)
-  const today = new Date()
-  const todayDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  )
-
-  return deadlineDate < todayDate ? "expired" : "Active"
-}
-
-function formatSalary(job: JobPost) {
-  const symbol = CURRENCY_SYMBOLS[job.currency] ?? job.currency
-  const min = Number(job.salaryMin)
-  const max = Number(job.salaryMax)
-
-  if (!min && !max) return "Not specified"
-
-  const fmt = (n: number) => n.toLocaleString("en-US")
-
-  if (min && max) {
-    return `${symbol}${fmt(min)} – ${symbol}${fmt(max)}`
-  }
-
-  return `${symbol}${fmt(min || max)}`
-}
-
-function formatLocation(job: JobPost) {
-  const place = [job.city, job.country].filter(Boolean).join(", ")
-
-  if (job.remote) return place ? `Remote (${place})` : "Remote"
-
-  return place || "—"
-}
-
-function formatPosted(datePosted: string) {
-  if (!datePosted) return ""
-
-  const days = Math.floor(
-    (Date.now() - new Date(datePosted).getTime()) / 86400000
-  )
-
-  if (days <= 0) return "Posted today"
-  if (days === 1) return "Posted 1d ago"
-  if (days < 7) return `Posted ${days}d ago`
-
-  const weeks = Math.floor(days / 7)
-
-  if (weeks < 5) return `Posted ${weeks}w ago`
-
-  return `Posted ${Math.floor(days / 30)}mo ago`
-}
-
-function StatusBadge({ status }: { status: JobStatus }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex h-[22px] items-center gap-1.5 rounded-full px-2.5 text-[10px] font-medium whitespace-nowrap",
-        STATUS_CLASSES[status]
-      )}
-    >
-      <span className="size-1.5 rounded-full bg-current" />
-      {status}
-    </span>
-  )
-}
+const CARD_FIELDS: CardField[] = [
+  {
+    label: "Company",
+    ddClass: "truncate font-medium text-white/85",
+    value: (job) => job.company,
+  },
+  {
+    label: "Location",
+    ddClass: "flex min-w-0 items-center gap-1",
+    icon: MapPin,
+    iconClass: "size-3",
+    value: (job) => formatLocation(job),
+  },
+  {
+    label: "Type",
+    ddClass: "truncate",
+    value: (job) => job.type,
+  },
+  {
+    label: "Compensation",
+    ddClass: "truncate",
+    value: (job) => formatSalary(job),
+  },
+  {
+    label: "Applicants",
+    ddClass: "flex items-center gap-1.5",
+    icon: Users,
+    iconClass: "size-3.5",
+    value: (job) => `${job.applicants} Candidates`,
+  },
+  {
+    label: "Deadline",
+    ddClass: "truncate",
+    value: (job) => formatDate(job.deadline),
+  },
+]
 
 export default async function ManageJobsPage() {
   const jobs: JobPost[] = await getJobs()
@@ -242,8 +162,8 @@ export default async function ManageJobsPage() {
 
                   <tbody>
                     {jobs.map((job) => {
-                      const { color, icon: Icon } = categoryStyle(job.category)
                       const status = getJobStatus(job)
+                      const { color } = categoryStyle(job.category)
 
                       return (
                         <tr
@@ -252,16 +172,7 @@ export default async function ManageJobsPage() {
                         >
                           <td className={cn(cellClass, "px-5")}>
                             <div className="flex min-w-0 items-center gap-3">
-                              <span
-                                className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] text-sm font-semibold"
-                                style={{
-                                  color,
-                                  backgroundColor: `${color}1a`,
-                                }}
-                                aria-hidden
-                              >
-                                <Icon className="size-4" />
-                              </span>
+                              <CategoryTile category={job.category} />
 
                               <div className="flex min-w-0 flex-col gap-1">
                                 <span className="truncate font-medium text-[#EDEDEF]">
@@ -357,22 +268,14 @@ export default async function ManageJobsPage() {
               {/* Mobile Cards - only visible on mobile */}
               <div className="divide-y divide-white/10 md:hidden">
                 {jobs.map((job) => {
-                  const { color, icon: Icon } = categoryStyle(job.category)
                   const status = getJobStatus(job)
+                  const { color } = categoryStyle(job.category)
 
                   return (
                     <div key={job._id} className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex min-w-0 items-center gap-3">
-                          <span
-                            className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.06]"
-                            style={{
-                              color,
-                              backgroundColor: `${color}1a`,
-                            }}
-                          >
-                            <Icon className="size-4" />
-                          </span>
+                          <CategoryTile category={job.category} />
 
                           <div className="min-w-0">
                             <h3 className="truncate text-sm font-semibold text-white">
@@ -392,69 +295,34 @@ export default async function ManageJobsPage() {
                       </div>
 
                       <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-4 rounded-xl border border-white/10 bg-[#0e0e0f] p-3.5">
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Company
-                          </dt>
+                        {CARD_FIELDS.map((field) => {
+                          const Icon = field.icon
 
-                          <dd className="mt-1 truncate text-xs font-medium text-white/85">
-                            {job.company}
-                          </dd>
-                        </div>
+                          return (
+                            <div key={field.label} className="min-w-0">
+                              <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
+                                {field.label}
+                              </dt>
 
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Location
-                          </dt>
-
-                          <dd className="mt-1 flex min-w-0 items-center gap-1 text-xs text-white/80">
-                            <MapPin className="size-3 shrink-0 text-white/40" />
-                            <span className="truncate">
-                              {formatLocation(job)}
-                            </span>
-                          </dd>
-                        </div>
-
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Type
-                          </dt>
-
-                          <dd className="mt-1 truncate text-xs text-white/80">
-                            {job.type}
-                          </dd>
-                        </div>
-
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Compensation
-                          </dt>
-
-                          <dd className="mt-1 truncate text-xs text-white/80">
-                            {formatSalary(job)}
-                          </dd>
-                        </div>
-
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Applicants
-                          </dt>
-
-                          <dd className="mt-1 flex items-center gap-1.5 text-xs text-white/80">
-                            <Users className="size-3.5 text-white/40" />
-                            {job.applicants} Candidates
-                          </dd>
-                        </div>
-
-                        <div className="min-w-0">
-                          <dt className="text-[10px] font-medium tracking-wide text-white/40 uppercase">
-                            Deadline
-                          </dt>
-
-                          <dd className="mt-1 truncate text-xs text-white/80">
-                            {formatDate(job.deadline)}
-                          </dd>
-                        </div>
+                              <dd
+                                className={cn(
+                                  "mt-1 text-xs text-white/80",
+                                  field.ddClass
+                                )}
+                              >
+                                {Icon ? (
+                                  <Icon
+                                    className={cn(
+                                      "shrink-0 text-white/40",
+                                      field.iconClass
+                                    )}
+                                  />
+                                ) : null}
+                                {field.value(job)}
+                              </dd>
+                            </div>
+                          )
+                        })}
                       </dl>
 
                       <p className="mt-2.5 text-[10px] text-white/40">
