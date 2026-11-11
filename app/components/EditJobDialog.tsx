@@ -74,6 +74,8 @@ function getFormData(job: JobPost): JobForm {
     responsibilities: job.responsibilities ?? "",
     requirements: job.requirements ?? "",
     benefits: job.benefits ?? "",
+    status: job.status ?? "Active",
+    applicants: job.applicants ?? 0,
   }
 }
 

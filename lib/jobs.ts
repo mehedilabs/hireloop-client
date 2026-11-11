@@ -6,14 +6,13 @@ import type { JobForm } from "@/app/dashboard/recruiter/jobs/new/page"
 
 export type { JobForm }
 
-export type JobStatus = "Active" | "Closed" | "Draft"
+export type JobStatus = "Active" | "expired" 
 
 /** A saved job post: everything the form collects plus what the table shows. */
 export type JobPost = JobForm & {
   _id: string
   company: string
-  status: JobStatus
-  applicants: number
+ 
   /** ISO date the post went live, e.g. "2026-11-05" */
   datePosted: string
 }

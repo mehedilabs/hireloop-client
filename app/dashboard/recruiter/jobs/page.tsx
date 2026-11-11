@@ -34,8 +34,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: LucideIcon }> = {
 
 const STATUS_CLASSES: Record<JobStatus, string> = {
   Active: "bg-[#14532d]/40 text-[#4ade80]",
-  Closed: "bg-[#1f1f1f] text-[#a0a0ab]",
-  Draft: "bg-[#5c53fe]/15 text-[#c3c0ff]",
+  expired: "bg-[#1f1f1f] text-[#a0a0ab]",
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -75,6 +74,25 @@ function formatDate(iso: string) {
     day: "2-digit",
     year: "numeric",
   })
+}
+
+function getJobStatus(job: JobPost): JobStatus {
+  if (job.status === "expired") return "expired"
+  if (job.status !== "Active" || !job.deadline) return job.status
+
+  const [y, m, d] = job.deadline.split("-").map(Number)
+
+  if (!y || !m || !d) return job.status
+
+  const deadlineDate = new Date(y, m - 1, d)
+  const today = new Date()
+  const todayDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  )
+
+  return deadlineDate < todayDate ? "expired" : "Active"
 }
 
 function formatSalary(job: JobPost) {
@@ -225,6 +243,7 @@ export default async function ManageJobsPage() {
                   <tbody>
                     {jobs.map((job) => {
                       const { color, icon: Icon } = categoryStyle(job.category)
+                      const status = getJobStatus(job)
 
                       return (
                         <tr
@@ -291,7 +310,7 @@ export default async function ManageJobsPage() {
                           </td>
 
                           <td className={cellClass}>
-                            <StatusBadge status={job.status} />
+                            <StatusBadge status={status} />
                           </td>
 
                           <td className={cellClass}>
@@ -299,16 +318,16 @@ export default async function ManageJobsPage() {
                               <span
                                 className={cn(
                                   "text-[#EDEDEF]",
-                                  job.status !== "Active" && "text-white/50"
+                                  status !== "Active" && "text-white/50"
                                 )}
                               >
                                 {formatDate(job.deadline)}
                               </span>
 
                               <span className="text-xs text-white/50">
-                                {job.status === "Active"
+                                {status === "Active"
                                   ? formatPosted(job.datePosted)
-                                  : job.status}
+                                  : status}
                               </span>
                             </div>
                           </td>
@@ -339,6 +358,7 @@ export default async function ManageJobsPage() {
               <div className="divide-y divide-white/10 md:hidden">
                 {jobs.map((job) => {
                   const { color, icon: Icon } = categoryStyle(job.category)
+                  const status = getJobStatus(job)
 
                   return (
                     <div key={job._id} className="p-4 sm:p-5">
@@ -368,7 +388,7 @@ export default async function ManageJobsPage() {
                           </div>
                         </div>
 
-                        <StatusBadge status={job.status} />
+                        <StatusBadge status={status} />
                       </div>
 
                       <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-4 rounded-xl border border-white/10 bg-[#0e0e0f] p-3.5">
@@ -438,9 +458,9 @@ export default async function ManageJobsPage() {
                       </dl>
 
                       <p className="mt-2.5 text-[10px] text-white/40">
-                        {job.status === "Active"
+                        {status === "Active"
                           ? formatPosted(job.datePosted)
-                          : job.status}
+                          : status}
                       </p>
 
                       <div className="mt-4 flex items-center gap-2 border-t border-white/5 pt-3">

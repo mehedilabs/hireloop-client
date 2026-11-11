@@ -25,6 +25,8 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { createJob } from "@/lib/actions/jobs"
+import { JobStatus } from "@/lib/jobs"
+import { toast } from "@/components/ui/toast"
 
 const JOB_CATEGORIES = [
   "Engineering",
@@ -55,6 +57,8 @@ export type JobForm = {
   responsibilities: string
   requirements: string
   benefits: string
+  status: JobStatus
+  applicants: number
 }
 
 const initialForm: JobForm = {
@@ -71,6 +75,8 @@ const initialForm: JobForm = {
   responsibilities: "",
   requirements: "",
   benefits: "",
+  applicants: 0,
+  status: "Active",
 }
 
 const inputClasses =
@@ -143,7 +149,7 @@ export default function NewJobPage() {
   const router = useRouter()
   const [form, setForm] = React.useState<JobForm>(initialForm)
   const [submitted, setSubmitted] = React.useState(false)
-
+  
   // text fields share one handler: <Input name="title" onChange={onChange} />
   const onChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -156,13 +162,24 @@ export default function NewJobPage() {
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
 
-    const result = await createJob(form)
 
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault()
+
+  const result = await createJob(form)
+
+  if (result?.acknowledged) {
     setSubmitted(true)
+
+    toast.add({
+      title: "Job Posted",
+      description: "Your job has been posted successfully.",
+    })
+
+    router.push('/dashboard/recruiter/jobs')
   }
+}
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col px-4 py-6 sm:py-8">

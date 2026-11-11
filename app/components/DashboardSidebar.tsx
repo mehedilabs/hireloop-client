@@ -200,9 +200,15 @@ export function DashboardSidebar() {
                 ))
               : menuItemsByRole[role].map((item) => {
                   const isActive =
-                    item.url === `/dashboard/${role}`
-                      ? pathname === item.url
-                      : pathname.startsWith(item.url)
+                    item.id === "manage-jobs"
+                      ? pathname === item.url ||
+                        (pathname.startsWith(`${item.url}/`) &&
+                          pathname !== `${item.url}/new`)
+                      : item.id === "add-job"
+                        ? pathname === item.url
+                        : item.url === `/dashboard/${role}`
+                          ? pathname === item.url
+                          : pathname.startsWith(item.url)
 
                   return (
                     <SidebarMenuItem key={item.id}>

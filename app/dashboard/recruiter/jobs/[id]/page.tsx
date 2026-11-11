@@ -47,8 +47,7 @@ const CATEGORY_STYLES: Record<string, { color: string; icon: LucideIcon }> = {
 
 const STATUS_CLASSES: Record<JobStatus, string> = {
   Active: "bg-[#14532d]/40 text-[#4ade80]",
-  Closed: "bg-[#1f1f1f] text-[#a0a0ab]",
-  Draft: "bg-[#5c53fe]/15 text-[#c3c0ff]",
+  expired: "bg-[#1f1f1f] text-[#a0a0ab]",
 }
 
 const CURRENCY_SYMBOLS: Record<string, string> = {
@@ -101,7 +100,9 @@ function formatLocation(job: JobPost) {
   return place || "Not specified"
 }
 
-function formatPosted(iso: string) {
+function formatPosted(iso?: string) {
+  if (!iso) return ""
+
   const date = parseIso(iso)
   if (!date) return ""
 
