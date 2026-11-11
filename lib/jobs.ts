@@ -35,6 +35,8 @@ export type JobForm = {
   benefits: string
   status: JobStatus
   applicants: number
+  company: string
+  salaryFrequency: string
 }
 
 /** A saved job post: the form data plus what the API/table adds. */
@@ -61,6 +63,8 @@ export const initialForm: JobForm = {
   benefits: "",
   applicants: 0,
   status: "Active",
+  company: "",
+  salaryFrequency: "per hour",
 }
 
 /* ---------- option lists ---------- */
@@ -247,5 +251,7 @@ export function getFormData(job: JobPost): JobForm {
     benefits: job.benefits ?? "",
     status: job.status ?? "Active",
     applicants: job.applicants ?? 0,
+    company: job.company ?? "",
+    salaryFrequency: job.salaryFrequency ?? "per hour",
   }
 }

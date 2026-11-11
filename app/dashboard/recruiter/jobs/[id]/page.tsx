@@ -139,7 +139,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 <EditJobDialog
                   job={job}
                   showLabel
-                  className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#5c53fe] px-2.5 text-xs font-semibold text-white shadow-md shadow-[#5c53fe]/15 transition-all duration-200 hover:bg-[#7169ff] hover:shadow-lg hover:shadow-[#5c53fe]/20 sm:h-10 sm:flex-none sm:gap-2 sm:px-4 sm:text-[13px]"
+                  className="inline-flex h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#5c53fe] px-2.5 text-xs font-semibold text-white shadow-md shadow-[#5c53fe]/15 transition-all duration-200 hover:bg-[#7169ff] hover:shadow-lg hover:shadow-[#5c53fe]/20 sm:h-10 sm:flex-none sm:gap-2 sm:px-4 sm:text-[13px]"
                 />
 
                 <Link

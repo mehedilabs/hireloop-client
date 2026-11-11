@@ -37,10 +37,7 @@ import {
 } from "@/lib/jobs"
 import { updateJob } from "@/lib/actions/jobs"
 import { toast } from "@/components/ui/toast"
-import {
-  FormField,
-  FormSection,
-} from "@/app/components/form/FormSection"
+import { FormField, FormSection } from "@/app/components/form/FormSection"
 import {
   inputClasses,
   selectClasses,
@@ -164,6 +161,21 @@ export function EditJobDialog({
                 className={inputClasses}
               />
             </FormField>
+            <FormField
+              label="Company Name"
+              htmlFor="edit-company"
+              required
+              full
+            >
+              <Input
+                id="edit-company"
+                name="company"
+                value={form.company}
+                onChange={onChange}
+                required
+                className={inputClasses}
+              />
+            </FormField>
 
             <FormField label="Category">
               <Select
@@ -245,7 +257,11 @@ export function EditJobDialog({
               </FormField>
             </div>
 
-            <FormField label="Application Deadline" htmlFor="edit-deadline" full>
+            <FormField
+              label="Application Deadline"
+              htmlFor="edit-deadline"
+              full
+            >
               <Input
                 id="edit-deadline"
                 name="deadline"
