@@ -30,7 +30,7 @@ import { authClient, useSession } from "@/lib/auth-client"
 type NavLink = { label: string; href: string; icon: LucideIcon }
 
 const NAV_LINKS: NavLink[] = [
-  { label: "Browse Jobs", href: "/jobs", icon: Briefcase },
+  { label: "Browse Jobs", href: "/browse-jobs", icon: Briefcase },
   { label: "Company", href: "/company", icon: Building2 },
   { label: "Pricing", href: "/pricing", icon: Tag },
 ]

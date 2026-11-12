@@ -16,6 +16,7 @@ import {
   Users,
 } from "lucide-react"
 
+import { ApplyNowButton } from "./_components/ApplyNowButton"
 import { CategoryTile } from "@/app/components/jobs/CategoryTile"
 import { StatusBadge } from "@/app/components/jobs/StatusBadge"
 import SiteFooter from "@/components/site-footer"
@@ -100,7 +101,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         </div>
 
         {/* Header Section matching Figma: Header Section */}
-        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#121214] p-4 sm:p-6 lg:p-8 shadow-sm">
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#121214] p-4 shadow-sm sm:p-6 lg:p-8">
           {/* Subtle category accent gradient line */}
           <div
             className="absolute inset-x-0 top-0 h-1"
@@ -114,12 +115,12 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             <div className="flex min-w-0 items-start gap-4 sm:gap-5">
               <CategoryTile
                 category={job.category}
-                className="size-14 sm:size-16 shrink-0 rounded-2xl"
+                className="size-14 shrink-0 rounded-2xl sm:size-16"
                 iconClassName="size-6 sm:size-7"
               />
 
               <div className="flex min-w-0 flex-col gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-white sm:text-2xl md:text-3xl break-words">
+                <h1 className="text-xl font-bold tracking-tight break-words text-white sm:text-2xl md:text-3xl">
                   {job.title}
                 </h1>
 
@@ -154,19 +155,14 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             </div>
 
             {/* Right: Apply Button */}
-            <div className="flex shrink-0 items-center gap-3">
-              <a
-                href="#apply"
-                className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#5c53fe] px-6 text-sm font-semibold text-white shadow-lg shadow-[#5c53fe]/25 transition-all hover:bg-[#6c61f0] sm:flex-initial"
-              >
-                <span>Apply Now</span>
-              </a>
+            <div className="flex w-full shrink-0 sm:w-auto">
+              <ApplyNowButton job={job} />
             </div>
           </div>
         </section>
 
         {/* Bento Info Grid matching Figma: Bento Info Grid */}
-        <section className="my-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+        <section className="my-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {/* Card 1: SALARY RANGE */}
           <div className="flex flex-col gap-1.5 rounded-xl border border-white/10 bg-[#121214] p-4">
             <div className="flex items-center gap-2 text-white/50">
@@ -175,8 +171,10 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 Salary Range
               </span>
             </div>
-            <p className="text-sm font-semibold text-white sm:text-base truncate">
-              {formattedSalary !== "Not specified" ? formattedSalary : "Competitive"}
+            <p className="truncate text-sm font-semibold text-white sm:text-base">
+              {formattedSalary !== "Not specified"
+                ? formattedSalary
+                : "Competitive"}
             </p>
           </div>
 
@@ -188,7 +186,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 Location
               </span>
             </div>
-            <p className="text-sm font-semibold text-white sm:text-base truncate">
+            <p className="truncate text-sm font-semibold text-white sm:text-base">
               {location}
             </p>
           </div>
@@ -201,7 +199,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 Job Type
               </span>
             </div>
-            <p className="text-sm font-semibold text-white sm:text-base truncate">
+            <p className="truncate text-sm font-semibold text-white sm:text-base">
               {job.type || "Full-time"}
             </p>
           </div>
@@ -214,7 +212,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 Deadline
               </span>
             </div>
-            <p className="text-sm font-semibold text-white sm:text-base truncate">
+            <p className="truncate text-sm font-semibold text-white sm:text-base">
               {job.deadline ? formatDate(job.deadline) : "Open until filled"}
             </p>
           </div>
@@ -223,18 +221,20 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         {/* Main Content Area: Left Details + Right Sidebar */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           {/* Left Column: Content Sections matching Figma */}
-          <section className="flex flex-col gap-8 rounded-2xl border border-white/10 bg-[#121214] p-5 sm:p-7 shadow-sm">
+          <section className="flex flex-col gap-8 rounded-2xl border border-white/10 bg-[#121214] p-5 shadow-sm sm:p-7">
             {/* 1. Job Description */}
             <div className="flex flex-col gap-3">
               <h3 className="text-base font-semibold text-white sm:text-lg">
                 Job Description
               </h3>
               <p className="text-xs leading-relaxed text-white/70 sm:text-sm">
-                At {job.company || "HireLoop Partner"}, we are seeking a passionate and driven{" "}
-                <span className="font-semibold text-white">{job.title}</span> to join our{" "}
-                <span className="text-[#c3c0ff]">{job.category}</span> team. In this role,
-                you will collaborate with cross-functional team members to design, develop, and
-                deliver high-impact solutions for our users and platform.
+                At {job.company || "HireLoop Partner"}, we are seeking a
+                passionate and driven{" "}
+                <span className="font-semibold text-white">{job.title}</span> to
+                join our <span className="text-[#c3c0ff]">{job.category}</span>{" "}
+                team. In this role, you will collaborate with cross-functional
+                team members to design, develop, and deliver high-impact
+                solutions for our users and platform.
               </p>
             </div>
 
@@ -305,7 +305,7 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-[#5c53fe]/15 text-[#c3c0ff]">
                           <Gift className="size-4" />
                         </div>
-                        <span className="text-xs font-medium text-white sm:text-sm break-words">
+                        <span className="text-xs font-medium break-words text-white sm:text-sm">
                           {benefit}
                         </span>
                       </div>
@@ -318,17 +318,17 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
 
           {/* Right Column: Aside - Sidebar matching Figma */}
           <aside className="flex flex-col gap-6">
-            <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#121214] p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-[#121214] p-5 shadow-sm sm:p-6">
               <h3 className="text-base font-semibold text-white">
                 Company Overview
               </h3>
 
               <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-                <div className="flex size-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60">
+                <div className="flex size-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/60">
                   <Building2 className="size-5" />
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-semibold text-white truncate">
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate font-semibold text-white">
                     {job.company || "HireLoop Partner"}
                   </span>
                   <span className="text-xs text-white/50">{job.category}</span>
@@ -338,45 +338,50 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               {/* Company & Role Details */}
               <div className="flex flex-col gap-3.5 text-xs">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-white/50 uppercase tracking-wider text-[10px]">
+                  <span className="text-[10px] tracking-wider text-white/50 uppercase">
                     Industry
                   </span>
-                  <span className="font-medium text-white text-right truncate">
+                  <span className="truncate text-right font-medium text-white">
                     {job.category || "Technology"}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-white/50 uppercase tracking-wider text-[10px]">
+                  <span className="text-[10px] tracking-wider text-white/50 uppercase">
                     Workplace
                   </span>
-                  <span className="font-medium text-white text-right">
+                  <span className="text-right font-medium text-white">
                     {job.remote ? "Remote" : "On-site / Hybrid"}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-white/50 uppercase tracking-wider text-[10px]">
+                  <span className="text-[10px] tracking-wider text-white/50 uppercase">
                     Status
                   </span>
                   <StatusBadge status={status} />
                 </div>
 
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-white/50 uppercase tracking-wider text-[10px]">
+                  <span className="text-[10px] tracking-wider text-white/50 uppercase">
                     Applicants
                   </span>
-                  <span className="font-medium text-white text-right">
+                  <span className="text-right font-medium text-white">
                     {job.applicants ?? 0} Candidates
                   </span>
                 </div>
 
                 {deadline.text && (
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-white/50 uppercase tracking-wider text-[10px]">
+                    <span className="text-[10px] tracking-wider text-white/50 uppercase">
                       Closing
                     </span>
-                    <span className={cn("font-medium text-right", deadline.className)}>
+                    <span
+                      className={cn(
+                        "text-right font-medium",
+                        deadline.className
+                      )}
+                    >
                       {deadline.text}
                     </span>
                   </div>
@@ -384,14 +389,8 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-2 flex flex-col gap-2.5 pt-4 border-t border-white/10">
-                <a
-                  id="apply"
-                  href={`mailto:careers@${(job.company || "hireloop").toLowerCase().replace(/\s+/g, "")}.com?subject=Application for ${encodeURIComponent(job.title)}`}
-                  className="flex h-10 w-full items-center justify-center rounded-xl bg-[#5c53fe] text-xs font-semibold text-white shadow-lg shadow-[#5c53fe]/25 transition-all hover:bg-[#6c61f0]"
-                >
-                  Apply for this position
-                </a>
+              <div className="mt-2 flex flex-col gap-2.5 border-t border-white/10 pt-4">
+                <ApplyNowButton job={job} />
 
                 <Link
                   href="/browse-jobs"

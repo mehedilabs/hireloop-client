@@ -5,6 +5,7 @@ import SiteNavbar from "@/components/site-navbar"
 import { getJobs } from "@/lib/api/jobs"
 import { type JobPost } from "@/lib/jobs"
 import { BrowseJobsLayout } from "./_components/BrowseJobsLayout"
+import { ApplicationSuccessToast } from "./_components/ApplicationSuccessToast"
 
 const BrowseJobsPage = async ({
   searchParams,
@@ -18,7 +19,7 @@ const BrowseJobsPage = async ({
   let jobs: JobPost[] = []
   try {
     const res = await getJobs(query)
-    jobs = Array.isArray(res) ? res : (res?.jobs || [])
+    jobs = Array.isArray(res) ? res : res?.jobs || []
   } catch (error) {
     console.error("BrowseJobsPage getJobs error:", error)
     jobs = []
@@ -29,6 +30,7 @@ const BrowseJobsPage = async ({
       <SiteNavbar />
       <main className="mx-auto w-full max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
         <Suspense fallback={<div className="min-h-[400px]" />}>
+          <ApplicationSuccessToast />
           <BrowseJobsLayout initialJobs={jobs} />
         </Suspense>
       </main>

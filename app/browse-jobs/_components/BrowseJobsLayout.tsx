@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { Briefcase, RotateCcw } from "lucide-react"
+import { Briefcase, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react"
 
 import { JOB_CATEGORIES, JOB_TYPES, type JobPost } from "@/lib/jobs"
 import { SearchHeader } from "./SearchHeader"
@@ -18,6 +18,8 @@ interface SearchDraftProps {
   initialValue: string
   onSearch: (value: string) => void
 }
+
+const JOBS_PER_PAGE = 6
 
 function SearchDraft({ initialValue, onSearch }: SearchDraftProps) {
   const [draftSearch, setDraftSearch] = React.useState(initialValue)
@@ -59,7 +61,6 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Read filter values directly from URL
   const urlSearch = searchParams.get("search") ?? searchParams.get("q") ?? ""
   const selectedJobType = searchParams.get("type") || null
   const selectedCategory = searchParams.get("category") || null
@@ -68,6 +69,7 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
   const searchQuery = urlSearch
 
   const [mobileFilterOpen, setMobileFilterOpen] = React.useState(false)
+  const [currentPage, setCurrentPage] = React.useState(1)
 
   // Update URL query parameters while preserving existing parameters
   const updateQueryParams = React.useCallback(
@@ -103,22 +105,27 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
 
   // Handlers
   const handleSearchSubmit = (val: string) => {
+    setCurrentPage(1)
     updateQueryParams({ search: val })
   }
 
   const handleSelectJobType = (type: string | null) => {
+    setCurrentPage(1)
     updateQueryParams({ type })
   }
 
   const handleSelectCategory = (cat: string | null) => {
+    setCurrentPage(1)
     updateQueryParams({ category: cat })
   }
 
   const handleSortChange = (sort: string) => {
+    setCurrentPage(1)
     updateQueryParams({ sort: sort === "Most Recent" ? null : sort })
   }
 
   const handleClearFilters = () => {
+    setCurrentPage(1)
     updateQueryParams({
       search: null,
       type: null,
@@ -152,11 +159,11 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
     return counts
   }, [initialJobs])
 
-  // Combined Search, Filtering, and Sorting Pipeline
+  // Search, Filtering, and Sorting
   const filteredJobs = React.useMemo(() => {
     let result = [...initialJobs]
 
-    // 1. Search
+    // Search
     const query = searchQuery.trim().toLowerCase()
 
     if (query) {
@@ -183,17 +190,17 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
       })
     }
 
-    // 2. Job Type
+    // Job Type
     if (selectedJobType) {
       result = result.filter((job) => matchesJobType(job, selectedJobType))
     }
 
-    // 3. Category
+    // Category
     if (selectedCategory) {
       result = result.filter((job) => matchesCategory(job, selectedCategory))
     }
 
-    // 4. Sorting
+    // Sorting
     result.sort((a, b) => {
       if (sortOption === "Most Recent") {
         const dateA = a.datePosted ? new Date(a.datePosted).getTime() : 0
@@ -232,6 +239,28 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
 
     return result
   }, [initialJobs, searchQuery, selectedJobType, selectedCategory, sortOption])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE)
+
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * JOBS_PER_PAGE,
+    currentPage * JOBS_PER_PAGE
+  )
+
+  const visiblePages = React.useMemo(() => {
+    const pages = new Set([
+      1,
+      totalPages,
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+    ])
+
+    return [...pages]
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b)
+  }, [currentPage, totalPages])
 
   return (
     <div className="flex flex-col gap-8 pb-16">
@@ -318,14 +347,76 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {filteredJobs.map((job) => (
-                <JobCard
-                  key={job._id || `${job.title}-${job.company}`}
-                  job={job}
-                />
-              ))}
-            </div>
+            <>
+              {/* One job card per row */}
+              <div className="flex flex-col gap-4">
+                {paginatedJobs.map((job) => (
+                  <JobCard
+                    key={job._id || `${job.title}-${job.company}`}
+                    job={job}
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }
+                    disabled={currentPage === 1}
+                    aria-label="Previous page"
+                    className="flex size-9 items-center justify-center rounded-lg border border-white/10 text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronLeft className="size-4" />
+                  </button>
+
+                  {visiblePages.map((page, index) => {
+                    const previousPage = visiblePages[index - 1]
+
+                    return (
+                      <React.Fragment key={page}>
+                        {previousPage && page - previousPage > 1 && (
+                          <span className="px-1 text-sm text-white/50">
+                            ...
+                          </span>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setCurrentPage(page)}
+                          aria-label={`Go to page ${page}`}
+                          aria-current={
+                            currentPage === page ? "page" : undefined
+                          }
+                          className={`flex size-9 items-center justify-center rounded-lg border text-sm font-medium transition-colors ${
+                            currentPage === page
+                              ? "border-white bg-white text-black"
+                              : "border-white/10 text-white hover:bg-white/10"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    )
+                  })}
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    aria-label="Next page"
+                    className="flex size-9 items-center justify-center rounded-lg border border-white/10 text-white transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <ChevronRight className="size-4" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>

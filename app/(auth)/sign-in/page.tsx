@@ -2,13 +2,13 @@
 
 import { useState, type FormEvent } from "react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import AuthToggle from "@/components/auth-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
 
 const inputClass =
   "h-11 border-white/10 bg-white/5 text-white placeholder:text-white/40"
@@ -17,6 +17,9 @@ const SignInPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const callbackURL = searchParams.get("callbackURL") || "/"
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -31,7 +34,7 @@ const SignInPage = () => {
     const { error } = await authClient.signIn.email({
       email,
       password,
-      callbackURL: "/",
+      callbackURL,
     })
 
     setLoading(false)
@@ -41,7 +44,7 @@ const SignInPage = () => {
       return
     }
 
-    router.push("/")
+    router.push(callbackURL)
     router.refresh()
   }
 
