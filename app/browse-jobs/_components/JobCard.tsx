@@ -37,14 +37,22 @@ export function JobCard({ job }: JobCardProps) {
         {/* Top row: Category/Company logo + Title/Company + Save icon */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3.5">
-            <CategoryTile category={job.category} className="size-11 rounded-xl" />
+            <CategoryTile
+              category={job.category}
+              className="size-11 rounded-xl"
+            />
 
             <div className="flex flex-col gap-1">
-              <h3 className="line-clamp-1 text-base font-semibold text-white transition-colors group-hover:text-[#c3c0ff]">
+              <Link
+                href={`/browse-jobs/${job._id || ""}`}
+                className="line-clamp-1 text-base font-semibold text-white transition-colors hover:text-[#c3c0ff] group-hover:text-[#c3c0ff]"
+              >
                 {job.title}
-              </h3>
+              </Link>
               <p className="flex items-center gap-1.5 text-xs text-white/50">
-                <span className="font-medium text-white/80">{job.company || "HireLoop Partner"}</span>
+                <span className="font-medium text-white/80">
+                  {job.company || "HireLoop Partner"}
+                </span>
                 <span>•</span>
                 <span className="flex items-center gap-1">
                   <MapPin className="size-3 text-white/40" />
@@ -72,13 +80,19 @@ export function JobCard({ job }: JobCardProps) {
         {/* Badges row matching Figma: Salary + Job Type + Remote / Status */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {formattedSalary && formattedSalary !== "Not specified" && (
-            <Chip icon={DollarSign} className="border-white/10 bg-white/5 text-white/80">
+            <Chip
+              icon={DollarSign}
+              className="border-white/10 bg-white/5 text-white/80"
+            >
               {formattedSalary}
             </Chip>
           )}
 
           {job.type && (
-            <Chip icon={Briefcase} className="border-white/10 bg-white/5 text-white/80">
+            <Chip
+              icon={Briefcase}
+              className="border-white/10 bg-white/5 text-white/80"
+            >
               {job.type}
             </Chip>
           )}
@@ -96,14 +110,16 @@ export function JobCard({ job }: JobCardProps) {
       {/* Card Footer: Action button matching Figma Easy Apply */}
       <div className="mt-5 flex items-center justify-between border-t border-white/5 pt-4">
         <span className="text-[11px] text-white/40">
-          {job.applicants ? `${job.applicants} applied` : "Be an early applicant"}
+          {job.applicants
+            ? `${job.applicants} applied`
+            : "Be an early applicant"}
         </span>
 
         <Link
-          href={`/dashboard/recruiter/jobs/${job._id || ""}`}
+          href={`/browse-jobs/${job._id || ""}`}
           className="inline-flex h-8 items-center justify-center rounded-lg border border-[#5c53fe]/40 bg-[#5c53fe]/10 px-3.5 text-xs font-semibold text-[#c3c0ff] transition-all hover:border-[#5c53fe] hover:bg-[#5c53fe] hover:text-white"
         >
-          Easy Apply
+          View Details
         </Link>
       </div>
     </article>

@@ -37,10 +37,7 @@ export function SearchHeader({ value, onChange, onSearch }: SearchHeaderProps) {
             <input
               type="text"
               value={value}
-              onChange={(e) => {
-                onChange(e.target.value)
-                onSearch(e.target.value)
-              }}
+              onChange={(e) => onChange(e.target.value)}
               placeholder="Search by job title, keywords..."
               className="w-full bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
             />
