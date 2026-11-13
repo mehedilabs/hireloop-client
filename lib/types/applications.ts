@@ -17,4 +17,5 @@ export type JobApplication = {
   remote: boolean
   appliedAt: string
   status: ApplicationStatus
+  isArchived?: boolean
 }

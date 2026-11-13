@@ -11,7 +11,6 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <SidebarTrigger />
         {children}
       </main>
-      <Toaster />
     </SidebarProvider>
   )
 }

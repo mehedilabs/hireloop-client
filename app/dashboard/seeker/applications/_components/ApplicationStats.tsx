@@ -1,31 +1,43 @@
-const stats = [
-  {
-    title: "Total Applied",
-    value: "0",
-    description: "All applications",
-    valueClass: "text-white",
-  },
-  {
-    title: "Shortlisted",
-    value: "0",
-    description: "Applications shortlisted",
-    valueClass: "text-blue-400",
-  },
-  {
-    title: "Interviews",
-    value: "0",
-    description: "Interview invitations",
-    valueClass: "text-amber-400",
-  },
-  {
-    title: "Success Rate",
-    value: "0%",
-    description: "Application success rate",
-    valueClass: "text-emerald-400",
-  },
-]
+import type { JobApplication } from "@/lib/types/applications"
 
-export function ApplicationStats() {
+type ApplicationStatsProps = {
+  applications: JobApplication[]
+}
+
+export function ApplicationStats({ applications }: ApplicationStatsProps) {
+  const totalApplied = applications.length
+
+  const shortlisted = applications.filter(
+    (application) => application.status === "Shortlisted"
+  ).length
+
+  const stats = [
+    {
+      title: "Total Applied",
+      value: totalApplied.toString(),
+      description: "All applications",
+      valueClass: "text-white",
+    },
+    {
+      title: "Shortlisted",
+      value: shortlisted.toString(),
+      description: "Applications shortlisted",
+      valueClass: "text-blue-400",
+    },
+    {
+      title: "Interviews",
+      value: "0",
+      description: "Interview invitations",
+      valueClass: "text-amber-400",
+    },
+    {
+      title: "Success Rate",
+      value: "0%",
+      description: "Application success rate",
+      valueClass: "text-emerald-400",
+    },
+  ]
+
   return (
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
       {stats.map((stat) => (
