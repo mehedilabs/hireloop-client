@@ -45,7 +45,7 @@ export function JobCard({ job }: JobCardProps) {
             <div className="flex flex-col gap-1">
               <Link
                 href={`/browse-jobs/${job._id || ""}`}
-                className="line-clamp-1 text-base font-semibold text-white transition-colors hover:text-[#c3c0ff] group-hover:text-[#c3c0ff]"
+                className="line-clamp-1 text-base font-semibold text-white transition-colors group-hover:text-[#c3c0ff] hover:text-[#c3c0ff]"
               >
                 {job.title}
               </Link>

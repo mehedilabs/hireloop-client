@@ -4,13 +4,14 @@ import { useRouter, usePathname } from "next/navigation"
 import { authClient } from "@/lib/auth-client"
 import { toast } from "@/components/ui/toast"
 import { applyToAJob } from "@/lib/actions/applications"
+import type { JobPost } from "@/lib/jobs"
+import type { JobApplication } from "@/lib/types/applications"
 
 interface ApplyNowButtonProps {
-  job: {
-    _id: string
-    title: string
-    company: string
-  }
+  job: Pick<
+    JobPost,
+    "_id" | "title" | "company" | "category" | "type" | "remote"
+  >
 }
 
 export function ApplyNowButton({ job }: ApplyNowButtonProps) {
@@ -27,13 +28,19 @@ export function ApplyNowButton({ job }: ApplyNowButtonProps) {
     const user = session.user
 
     if (user.role === "seeker") {
-      const application = {
+      const application: JobApplication = {
         jobId: job._id,
         userId: user.id,
         email: user.email,
         jobTitle: job.title,
         companyName: job.company,
+        category: job.category,
+        jobType: job.type,
+        remote: job.remote,
+        appliedAt: new Date().toISOString(),
+        status: "Applied",
       }
+
       const result = await applyToAJob(application)
 
       if (result.insertedId) {

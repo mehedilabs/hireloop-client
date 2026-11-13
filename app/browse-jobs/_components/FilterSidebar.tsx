@@ -89,7 +89,7 @@ export function FilterSidebar({
                 className={cn(
                   "group flex items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs transition-colors",
                   isSelected
-                    ? "bg-[#5c53fe]/15 text-[#c3c0ff] font-medium"
+                    ? "bg-[#5c53fe]/15 font-medium text-[#c3c0ff]"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
@@ -102,7 +102,9 @@ export function FilterSidebar({
                         : "border-white/20 bg-transparent group-hover:border-white/40"
                     )}
                   >
-                    {isSelected && <span className="size-1.5 rounded-full bg-white" />}
+                    {isSelected && (
+                      <span className="size-1.5 rounded-full bg-white" />
+                    )}
                   </span>
                   <span>{type}</span>
                 </div>
@@ -139,7 +141,7 @@ export function FilterSidebar({
                 className={cn(
                   "group flex items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs transition-colors",
                   isSelected
-                    ? "bg-[#5c53fe]/15 text-[#c3c0ff] font-medium"
+                    ? "bg-[#5c53fe]/15 font-medium text-[#c3c0ff]"
                     : "text-white/70 hover:bg-white/5 hover:text-white"
                 )}
               >
@@ -152,7 +154,9 @@ export function FilterSidebar({
                         : "border-white/20 bg-transparent group-hover:border-white/40"
                     )}
                   >
-                    {isSelected && <span className="size-1.5 rounded-full bg-white" />}
+                    {isSelected && (
+                      <span className="size-1.5 rounded-full bg-white" />
+                    )}
                   </span>
                   <span className="truncate">{cat}</span>
                 </div>
