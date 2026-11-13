@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import Link from "next/link"
 import { Bookmark, Briefcase, DollarSign, MapPin } from "lucide-react"
 
@@ -17,16 +16,19 @@ import { cn } from "@/lib/utils"
 
 interface JobCardProps {
   job: JobPost
+  isSaved: boolean
+  isSaving: boolean
+  isAuthenticated: boolean
+  onSaveToggle: () => void
 }
 
-export function JobCard({ job }: JobCardProps) {
-  const [isSaved, setIsSaved] = React.useState(false)
-
-  const handleSave = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsSaved(!isSaved)
-  }
-
+export function JobCard({
+  job,
+  isSaved,
+  isSaving,
+  isAuthenticated,
+  onSaveToggle,
+}: JobCardProps) {
   const status = getJobStatus(job)
   const formattedSalary = formatSalary(job)
   const location = formatLocation(job, "Remote / Flexible")
@@ -36,26 +38,29 @@ export function JobCard({ job }: JobCardProps) {
       <div className="flex flex-col gap-4">
         {/* Top row: Category/Company logo + Title/Company + Save icon */}
         <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3.5">
+          <div className="flex min-w-0 items-start gap-3.5">
             <CategoryTile
               category={job.category}
-              className="size-11 rounded-xl"
+              className="size-11 shrink-0 rounded-xl"
             />
 
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-1">
               <Link
                 href={`/browse-jobs/${job._id || ""}`}
                 className="line-clamp-1 text-base font-semibold text-white transition-colors group-hover:text-[#c3c0ff] hover:text-[#c3c0ff]"
               >
                 {job.title}
               </Link>
-              <p className="flex items-center gap-1.5 text-xs text-white/50">
+
+              <p className="flex flex-wrap items-center gap-1.5 text-xs text-white/50">
                 <span className="font-medium text-white/80">
                   {job.company || "HireLoop Partner"}
                 </span>
+
                 <span>•</span>
+
                 <span className="flex items-center gap-1">
-                  <MapPin className="size-3 text-white/40" />
+                  <MapPin className="size-3 shrink-0 text-white/40" />
                   {location}
                 </span>
               </p>
@@ -64,10 +69,25 @@ export function JobCard({ job }: JobCardProps) {
 
           <button
             type="button"
-            onClick={handleSave}
-            aria-label="Save job"
+            onClick={onSaveToggle}
+            disabled={!isAuthenticated || isSaving}
+            aria-label={
+              !isAuthenticated
+                ? "Sign in to save jobs"
+                : isSaved
+                  ? "Remove saved job"
+                  : "Save job"
+            }
+            aria-pressed={isSaved}
+            title={
+              !isAuthenticated
+                ? "Sign in to save jobs"
+                : isSaved
+                  ? "Remove from saved jobs"
+                  : "Save job"
+            }
             className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors",
+              "flex size-8 shrink-0 items-center justify-center rounded-lg border transition-colors disabled:cursor-not-allowed disabled:opacity-40",
               isSaved
                 ? "border-[#5c53fe] bg-[#5c53fe]/20 text-[#c3c0ff]"
                 : "border-white/10 bg-[#1a1a1d] text-white/40 hover:border-white/20 hover:text-white"
@@ -77,7 +97,7 @@ export function JobCard({ job }: JobCardProps) {
           </button>
         </div>
 
-        {/* Badges row matching Figma: Salary + Job Type + Remote / Status */}
+        {/* Salary + Job Type + Remote / Status */}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {formattedSalary && formattedSalary !== "Not specified" && (
             <Chip
@@ -107,7 +127,7 @@ export function JobCard({ job }: JobCardProps) {
         </div>
       </div>
 
-      {/* Card Footer: Action button matching Figma Easy Apply */}
+      {/* Card Footer */}
       <div className="mt-5 flex items-center justify-between border-t border-white/5 pt-4">
         <span className="text-[11px] text-white/40">
           {job.applicants

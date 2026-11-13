@@ -16,7 +16,7 @@ export function ApplicationTabs({
         <button
           type="button"
           onClick={() => onTabChange("active")}
-          className={`rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+          className={`cursor-pointer rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "active"
               ? "bg-[#5b4fe9] text-white shadow-sm"
               : "text-white/50 hover:bg-white/5 hover:text-white"
@@ -28,7 +28,7 @@ export function ApplicationTabs({
         <button
           type="button"
           onClick={() => onTabChange("archived")}
-          className={`rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
+          className={`cursor-pointer rounded-md px-4 py-2.5 text-sm font-medium transition-colors ${
             activeTab === "archived"
               ? "bg-[#5b4fe9] text-white shadow-sm"
               : "text-white/50 hover:bg-white/5 hover:text-white"
@@ -47,7 +47,7 @@ export function ApplicationTabs({
             type: "info",
           })
         }
-        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
+        className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/10"
       >
         <FileDown className="size-4" />
         Export PDF

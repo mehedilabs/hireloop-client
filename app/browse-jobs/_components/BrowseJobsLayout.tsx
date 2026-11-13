@@ -4,7 +4,11 @@ import * as React from "react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Briefcase, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react"
 
+import { authClient } from "@/lib/auth-client"
+import { getMySavedJobs, type SavedJob } from "@/lib/api/saved-jobs"
+import { saveJob, removeSavedJob } from "@/lib/actions/saved-jobs"
 import { JOB_CATEGORIES, JOB_TYPES, type JobPost } from "@/lib/jobs"
+
 import { SearchHeader } from "./SearchHeader"
 import { FilterSidebar } from "./FilterSidebar"
 import { JobListHeader } from "./JobListHeader"
@@ -61,6 +65,19 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
+
+  const userId = session?.user?.id
+
+  const [savedJobs, setSavedJobs] = React.useState<SavedJob[]>([])
+  const [savingJobId, setSavingJobId] = React.useState<string | null>(null)
+  const [savedJobsUserId, setSavedJobsUserId] = React.useState<string | null>(
+    null
+  )
+
+  const [mobileFilterOpen, setMobileFilterOpen] = React.useState(false)
+  const [currentPage, setCurrentPage] = React.useState(1)
+
   const urlSearch = searchParams.get("search") ?? searchParams.get("q") ?? ""
   const selectedJobType = searchParams.get("type") || null
   const selectedCategory = searchParams.get("category") || null
@@ -68,8 +85,62 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
 
   const searchQuery = urlSearch
 
-  const [mobileFilterOpen, setMobileFilterOpen] = React.useState(false)
-  const [currentPage, setCurrentPage] = React.useState(1)
+  // Load saved jobs for the logged-in user
+  React.useEffect(() => {
+    if (isSessionPending) return
+
+    if (!userId) return
+
+    let isActive = true
+
+    const loadSavedJobs = async () => {
+      try {
+        const result = await getMySavedJobs(userId)
+
+        if (isActive) {
+          setSavedJobs(result)
+          setSavedJobsUserId(userId)
+        }
+      } catch (error) {
+        console.error("Failed to load saved jobs:", error)
+      }
+    }
+
+    loadSavedJobs()
+
+    return () => {
+      isActive = false
+    }
+  }, [userId, isSessionPending])
+
+  // Save or remove a job from saved jobs
+  const handleSaveToggle = async (job: JobPost) => {
+    if (!userId || savingJobId) return
+
+    setSavingJobId(job._id)
+
+    try {
+      const existingSavedJob = savedJobs.find(
+        (savedJob) => savedJob.jobId === job._id
+      )
+
+      if (existingSavedJob) {
+        await removeSavedJob(existingSavedJob._id)
+      } else {
+        await saveJob({
+          userId,
+          jobId: job._id,
+        })
+      }
+
+      const updatedSavedJobs = await getMySavedJobs(userId)
+      setSavedJobs(updatedSavedJobs)
+    } catch (error) {
+      console.error("Failed to update saved job:", error)
+    } finally {
+      setSavingJobId(null)
+    }
+  }
 
   // Update URL query parameters while preserving existing parameters
   const updateQueryParams = React.useCallback(
@@ -350,12 +421,22 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
             <>
               {/* One job card per row */}
               <div className="flex flex-col gap-4">
-                {paginatedJobs.map((job) => (
-                  <JobCard
-                    key={job._id || `${job.title}-${job.company}`}
-                    job={job}
-                  />
-                ))}
+                {paginatedJobs.map((job) => {
+                  const isSaved =
+                    savedJobsUserId === userId &&
+                    savedJobs.some((savedJob) => savedJob.jobId === job._id)
+
+                  return (
+                    <JobCard
+                      key={job._id || `${job.title}-${job.company}`}
+                      job={job}
+                      isSaved={isSaved}
+                      isSaving={savingJobId === job._id}
+                      isAuthenticated={Boolean(userId) && !isSessionPending}
+                      onSaveToggle={() => handleSaveToggle(job)}
+                    />
+                  )
+                })}
               </div>
 
               {/* Pagination */}
