@@ -13,6 +13,12 @@ export async function POST() {
     const headersList = await headers()
     const origin = headersList.get('origin')
 
+    if (!userSession) {
+  return NextResponse.json(
+    { error: 'Unauthorized' },
+    { status: 401 }
+  )
+}
     // Create Checkout Sessions from body params.
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -24,6 +30,9 @@ export async function POST() {
       ],
       mode: 'payment',
       customer_email: userSession?.user.email,
+      metadata:{
+        userId:userSession?.user.id,
+      },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       // Provide a name (for example, hosted_web_0001) to label this Checkout integration and measure its conversion independently
        integration_identifier: 'hireloop_web_001',

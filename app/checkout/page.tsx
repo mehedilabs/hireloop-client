@@ -55,7 +55,7 @@ const CheckoutPage = async ({
           <form action="/api/checkout_sessions" method="POST">
             <button
               type="submit"
-              className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[#5c53fe] font-semibold text-white transition-colors hover:bg-[#4940e8]"
+              className="mt-6 flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-[#5c53fe] font-semibold text-white transition-colors hover:bg-[#4940e8]"
             >
               Pay Now
             </button>

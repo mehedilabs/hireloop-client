@@ -10,6 +10,7 @@ import { getMyApplications } from "@/lib/api/applications"
 import type { JobPost } from "@/lib/jobs"
 import type { JobApplication } from "@/lib/types/applications"
 import { getApplicationsCount } from "@/lib/api/applications"
+import { getUserPremiumById } from "@/lib/api/user"
 
 interface ApplyNowButtonProps {
   job: Pick<
@@ -97,13 +98,17 @@ export function ApplyNowButton({
     try {
       setIsSubmitting(true)
 
-      // Check the user's total applications
-      const countResult = await getApplicationsCount(user.id)
+      // Check user's premium status
+      const premiumResult = await getUserPremiumById(user.id)
 
-      // Free application limit: 10
-      if (countResult.count >= 10) {
-        router.push("/checkout")
-        return
+      if (!premiumResult.premium) {
+        const countResult = await getApplicationsCount(user.id)
+
+        // Free application limit: 10
+        if (countResult.count >= 10) {
+          router.push("/checkout")
+          return
+        }
       }
       const application: JobApplication = {
         jobId: job._id,
