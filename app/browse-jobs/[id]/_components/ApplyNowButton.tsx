@@ -102,7 +102,7 @@ export function ApplyNowButton({
 
       // Free application limit: 10
       if (countResult.count >= 10) {
-        router.push("/payment")
+        router.push("/checkout")
         return
       }
       const application: JobApplication = {
