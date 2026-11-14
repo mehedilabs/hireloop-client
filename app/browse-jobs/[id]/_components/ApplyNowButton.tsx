@@ -9,6 +9,7 @@ import { applyToAJob } from "@/lib/actions/applications"
 import { getMyApplications } from "@/lib/api/applications"
 import type { JobPost } from "@/lib/jobs"
 import type { JobApplication } from "@/lib/types/applications"
+import { getApplicationsCount } from "@/lib/api/applications"
 
 interface ApplyNowButtonProps {
   job: Pick<
@@ -93,21 +94,29 @@ export function ApplyNowButton({
       return
     }
 
-    const application: JobApplication = {
-      jobId: job._id,
-      userId: user.id,
-      email: user.email,
-      jobTitle: job.title,
-      companyName: job.company,
-      category: job.category,
-      jobType: job.type,
-      remote: job.remote,
-      appliedAt: new Date().toISOString(),
-      status: "Applied",
-    }
-
     try {
       setIsSubmitting(true)
+
+      // Check the user's total applications
+      const countResult = await getApplicationsCount(user.id)
+
+      // Free application limit: 10
+      if (countResult.count >= 10) {
+        router.push("/payment")
+        return
+      }
+      const application: JobApplication = {
+        jobId: job._id,
+        userId: user.id,
+        email: user.email,
+        jobTitle: job.title,
+        companyName: job.company,
+        category: job.category,
+        jobType: job.type,
+        remote: job.remote,
+        appliedAt: new Date().toISOString(),
+        status: "Applied",
+      }
 
       const result = await applyToAJob(application)
 
