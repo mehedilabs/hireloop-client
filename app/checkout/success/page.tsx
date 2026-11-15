@@ -3,6 +3,44 @@ import { stripe } from "@/lib/stripe"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 
+function Row({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-2 text-xs">
+      <span className="shrink-0 text-slate-500">{label}</span>
+      <span className="text-right font-medium text-slate-200">{children}</span>
+    </div>
+  )
+}
+
+function CopyBox({
+  label,
+  mono,
+  children,
+}: {
+  label: string
+  mono?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div className="py-2 text-xs">
+      <span className="text-slate-500">{label}</span>
+      <p
+        className={`mt-1.5 rounded-lg border border-[#2a2a3d] bg-white/5 px-2.5 py-2 leading-snug break-all text-slate-300 ${
+          mono ? "font-mono text-[11px]" : "text-xs"
+        }`}
+      >
+        {children}
+      </p>
+    </div>
+  )
+}
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
@@ -14,10 +52,20 @@ export default async function CheckoutSuccessPage({
     throw new Error("Please provide a valid session_id (`cs_test_...`)")
   }
 
-  const { status, payment_status, customer_email, metadata, payment_intent } =
-    await stripe.checkout.sessions.retrieve(session_id, {
-      expand: ["line_items", "payment_intent"],
-    })
+  const session = await stripe.checkout.sessions.retrieve(session_id, {
+    expand: ["line_items", "payment_intent"],
+  })
+
+  const {
+    status,
+    payment_status,
+    metadata,
+    payment_intent,
+    amount_total,
+    currency,
+  } = session
+
+  const email = session.customer_email || session.customer_details?.email
 
   if (status === "open") {
     return redirect("/")
@@ -25,120 +73,109 @@ export default async function CheckoutSuccessPage({
 
   const isRecruiter = metadata?.plan === "recruiter"
 
+  const transactionId =
+    typeof payment_intent === "string"
+      ? payment_intent
+      : payment_intent?.id || "N/A"
+
+  const amountPaid = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency?.toUpperCase() || "USD",
+  }).format((amount_total || 0) / 100)
+
   if (status === "complete" && payment_status === "paid") {
-    const result = await checkoutVerify(session_id)
-    console.log(result)
+    await checkoutVerify(session_id)
+
+    const planName = isRecruiter ? "Recruiter Premium" : "Seeker Premium"
 
     return (
       <section
         id="success"
-        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0b0b16] px-4"
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[#0b0b16] px-4 py-6"
       >
         {/* Background glow */}
-        <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-[#5a4ff5]/25 blur-3xl" />
-        <div className="pointer-events-none absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-[#6c63ff]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -top-24 -left-24 h-64 w-64 rounded-full bg-[#5a4ff5]/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 -bottom-24 h-64 w-64 rounded-full bg-[#6c63ff]/15 blur-3xl" />
 
-        <div className="relative w-full max-w-md rounded-3xl border border-[#2a2a3d] bg-[#171726]/80 p-8 text-center shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-10">
-          {/* Success icon */}
-          <div className="relative mx-auto mb-6 flex h-24 w-24 items-center justify-center">
-            <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/20" />
-            <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-emerald-400/30 to-[#5a4ff5]/30 blur-md" />
-            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/30">
+        <div className="relative w-full max-w-sm rounded-2xl border border-[#2a2a3d] bg-[#171726]/80 p-5 shadow-xl shadow-black/40 backdrop-blur-xl">
+          {/* Header */}
+          <div className="text-center">
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/15 ring-4 ring-emerald-500/10">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="white"
+                stroke="currentColor"
                 strokeWidth={3}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="h-10 w-10"
+                className="h-6 w-6 text-emerald-400"
               >
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
+
+            <h1 className="text-xl font-bold tracking-tight text-white">
+              Payment Successful
+            </h1>
+
+            <p className="mt-1.5 text-xs leading-relaxed text-slate-400">
+              {isRecruiter
+                ? "Your Recruiter Premium plan is active. Enjoy unlimited job posts."
+                : "Your Seeker Premium plan is active. Enjoy unlimited applications."}
+            </p>
+
+            <p className="mt-3 text-2xl font-bold text-emerald-400">
+              {amountPaid}
+            </p>
           </div>
 
-          {/* Heading */}
-          <p className="text-sm text-slate-400">
-            {isRecruiter
-              ? "Hireloop Recruiter Premium"
-              : "Hireloop Seeker Premium"}
-          </p>
+          {/* Details */}
+          <div className="mt-4 divide-y divide-[#2a2a3d] rounded-xl border border-[#2a2a3d] bg-[#0b0b16]/60 px-3">
+            <Row label="Plan">Hireloop {planName}</Row>
 
-          <h1 className="mt-1 bg-gradient-to-r from-white via-indigo-100 to-[#a5a0ff] bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl">
-            Payment Successful!
-          </h1>
+            <Row label="Benefits">
+              {isRecruiter ? "Unlimited Job Posts" : "Unlimited Applications"}
+            </Row>
 
-          <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
-            {isRecruiter
-              ? "Congratulations! Your Recruiter Premium plan is now active. Enjoy unlimited job postings and connect with the right talent to grow your team."
-              : "Congratulations! Your Seeker Premium plan is now active. Enjoy unlimited job applications and take the next step toward your dream career."}
-          </p>
-
-          {/* Info box */}
-          <div className="mt-8 rounded-2xl border border-[#2a2a3d] bg-[#0b0b16]/60 p-4 text-left">
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-slate-400">Premium Plan</span>
-              <span className="text-right font-medium text-slate-200">
-                {isRecruiter ? "Recruiter Premium" : "Seeker Premium"}
-              </span>
-            </div>
-
-            <div className="my-3 h-px bg-[#2a2a3d]" />
-
-            <div className="flex items-center justify-between gap-3 text-sm">
-              <span className="text-slate-400">Benefits</span>
-              <span className="text-right text-slate-200">
-                {isRecruiter ? "Unlimited Job Posts" : "Unlimited Applications"}
-              </span>
-            </div>
-
-            <div className="my-3 h-px bg-[#2a2a3d]" />
-
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Status</span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <Row label="Status">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-400">
+                <span className="h-1 w-1 rounded-full bg-emerald-400" />
                 Paid
               </span>
-            </div>
+            </Row>
 
-            {customer_email && (
-              <>
-                <div className="my-3 h-px bg-[#2a2a3d]" />
-                <div className="flex items-center justify-between gap-4 text-sm">
-                  <span className="text-slate-400">Receipt sent to</span>
-                  <span className="truncate text-slate-200">
-                    {customer_email}
-                  </span>
-                </div>
-              </>
-            )}
+            <CopyBox label="Transaction ID" mono>
+              {transactionId}
+            </CopyBox>
+
+            {email && <CopyBox label="Receipt sent to">{email}</CopyBox>}
           </div>
 
           {/* Buttons */}
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-4 grid grid-cols-2 gap-2.5">
             <Link
               href={isRecruiter ? "/dashboard/recruiter" : "/dashboard/seeker"}
-              className="flex-1 rounded-xl bg-[#5a4ff5] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#5a4ff5]/30 transition hover:scale-[1.02] hover:bg-[#6c63ff] hover:shadow-[#5a4ff5]/50"
+              className="rounded-lg bg-[#5a4ff5] px-3 py-2.5 text-center text-xs font-semibold text-white shadow-md shadow-[#5a4ff5]/30 transition hover:bg-[#6c63ff] active:scale-[0.98]"
             >
-              Go to Dashboard
+              Dashboard
             </Link>
 
             <Link
               href="/"
-              className="flex-1 rounded-xl border border-[#2a2a3d] bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+              className="rounded-lg border border-[#2a2a3d] bg-white/5 px-3 py-2.5 text-center text-xs font-semibold text-slate-200 transition hover:bg-white/10 active:scale-[0.98]"
             >
               Back to Home
             </Link>
           </div>
 
-          <p className="mt-6 text-xs text-slate-500">
+          <p className="mt-4 text-center text-[10px] text-slate-500">
             Secure payment powered by Stripe
           </p>
         </div>
       </section>
     )
   }
+
+  return redirect("/")
 }

@@ -16,6 +16,7 @@ import {
   type JobPost,
 } from "@/lib/jobs"
 import { cn } from "@/lib/utils"
+import { getSession } from "@/lib/core/server"
 
 const headingClass =
   "px-4 py-4 text-xs font-semibold tracking-wide text-white/50 uppercase"
@@ -72,7 +73,9 @@ const CARD_FIELDS: CardField[] = [
 ]
 
 export default async function ManageJobsPage() {
-  const jobs: JobPost[] = await getJobs()
+  const session = await getSession()
+
+  const jobs: JobPost[] = await getJobs(`userId=${session?.user.id}`)
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#131314] px-3 py-5 sm:px-5 sm:py-7 lg:px-6">
