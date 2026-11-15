@@ -131,7 +131,7 @@ export function EditJobDialog({
               className ||
               (showLabel
                 ? "inline-flex h-8 items-center gap-1.5 rounded-md border border-[#5c53fe]/30 bg-[#5c53fe]/10 px-3 text-xs font-medium text-[#c3c0ff] hover:bg-[#5c53fe]/20"
-                : "size-8 rounded-md border border-white/10 text-[#a5a5b0] hover:border-[#5b4fe9]/40 hover:bg-[#5b4fe9]/10 hover:text-[#c3c0ff]")
+                : "border-bg-[#5b4fe9]/10 size-8 rounded-md border bg-[#5b4fe9]/5 text-[#c3c0ff] hover:border-[#5b4fe9]/60 hover:bg-[#5b4fe9]/20 hover:text-white")
             }
           >
             <Pencil className={showLabel ? "size-3.5" : "size-4"} />

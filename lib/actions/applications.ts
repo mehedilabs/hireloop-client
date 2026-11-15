@@ -1,3 +1,5 @@
+import type { ApplicationStatus } from "@/lib/types/applications"
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 type ApplyJobData = {
@@ -43,6 +45,31 @@ export const updateApplicationArchive = async (
 
   if (!response.ok) {
     throw new Error("Failed to update application archive status")
+  }
+
+  return response.json()
+}
+
+
+
+
+export const updateApplicationStatus = async (
+  applicationId: string,
+  status: ApplicationStatus
+) => {
+  const response = await fetch(
+    `${BASE_URL}/applications/${applicationId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to update application status")
   }
 
   return response.json()

@@ -1,5 +1,12 @@
 import Link from "next/link"
-import { Eye, MapPin, Plus, Users, type LucideIcon } from "lucide-react"
+import {
+  ClipboardList,
+  Eye,
+  MapPin,
+  Plus,
+  Users,
+  type LucideIcon,
+} from "lucide-react"
 
 import { CategoryTile } from "@/app/components/jobs/CategoryTile"
 import { StatusBadge } from "@/app/components/jobs/StatusBadge"
@@ -26,7 +33,6 @@ const cellClass = "px-4 py-4"
 const iconButtonClass =
   "flex size-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-[#1A1A1F] text-white/60 transition-all hover:border-[#5c53fe]/50 hover:bg-[#5c53fe]/10 hover:text-white"
 
-/** Rows of the mobile card's two-column detail grid. */
 type CardField = {
   label: string
   ddClass: string
@@ -118,7 +124,7 @@ export default async function ManageJobsPage() {
             </p>
           ) : (
             <>
-              {/* Desktop Table - hidden on mobile */}
+              {/* Desktop Table */}
               <div className="hidden overflow-x-auto md:block">
                 <table className="w-full table-fixed text-left text-sm">
                   <thead>
@@ -156,7 +162,7 @@ export default async function ManageJobsPage() {
 
                       <th
                         scope="col"
-                        className={cn(headingClass, "w-[11%] px-5")}
+                        className={cn(headingClass, "w-[15%] px-3")}
                       >
                         Actions
                       </th>
@@ -173,7 +179,7 @@ export default async function ManageJobsPage() {
                           key={job._id}
                           className="border-b border-white/5 transition-colors last:border-b-0 hover:bg-white/[0.03]"
                         >
-                          <td className={cn(cellClass, "px-5")}>
+                          <td className={cn(cellClass, "px-3")}>
                             <div className="flex min-w-0 items-center gap-3">
                               <CategoryTile category={job.category} />
 
@@ -247,13 +253,23 @@ export default async function ManageJobsPage() {
                           </td>
 
                           <td className={cn(cellClass, "px-5")}>
-                            <div className="flex items-center justify-center gap-2">
+                            <div className="flex items-center justify-center gap-1">
                               <Link
                                 href={`/dashboard/recruiter/jobs/${job._id}`}
                                 aria-label={`View ${job.title}`}
+                                title="View Job"
                                 className={iconButtonClass}
                               >
                                 <Eye aria-hidden className="size-4" />
+                              </Link>
+
+                              <Link
+                                href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+                                aria-label={`View applications for ${job.title}`}
+                                title="View Applications"
+                                className={iconButtonClass}
+                              >
+                                <ClipboardList aria-hidden className="size-4" />
                               </Link>
 
                               <EditJobDialog job={job} />
@@ -268,7 +284,7 @@ export default async function ManageJobsPage() {
                 </table>
               </div>
 
-              {/* Mobile Cards - only visible on mobile */}
+              {/* Mobile Cards */}
               <div className="divide-y divide-white/10 md:hidden">
                 {jobs.map((job) => {
                   const status = getJobStatus(job)
@@ -334,13 +350,21 @@ export default async function ManageJobsPage() {
                           : status}
                       </p>
 
-                      <div className="mt-4 flex items-center gap-2 border-t border-white/5 pt-3">
+                      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
                         <Link
                           href={`/dashboard/recruiter/jobs/${job._id}`}
                           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/10 bg-[#1A1A1F] px-3 text-xs font-medium text-white/70 transition-colors hover:border-[#5c53fe]/50 hover:text-white"
                         >
                           <Eye className="size-3.5" />
                           View
+                        </Link>
+
+                        <Link
+                          href={`/dashboard/recruiter/jobs/${job._id}/applications`}
+                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-white/10 bg-[#1A1A1F] px-3 text-xs font-medium text-white/70 transition-colors hover:border-[#5c53fe]/50 hover:text-white"
+                        >
+                          <ClipboardList className="size-3.5" />
+                          Applications
                         </Link>
 
                         <EditJobDialog job={job} showLabel />

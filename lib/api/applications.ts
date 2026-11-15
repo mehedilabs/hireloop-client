@@ -30,3 +30,19 @@ export const getApplicationsCount = async (
 
   return res.json()
 }
+
+
+
+export const getApplicationsByJobId = async (
+  jobId: string
+): Promise<JobApplication[]> => {
+  const res = await fetch(
+    `${BASE_URL}/applications?jobId=${jobId}`
+  )
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch job applications")
+  }
+
+  return res.json()
+}
