@@ -33,3 +33,16 @@ export const updateJob = async (jobId: string, data: JobForm) => {
 
   return res.json();
 };
+
+
+export const getJobPostCount = async (userId: string) => {
+  const res = await fetch(
+    `${BASE_URL}/jobs/count?userId=${userId}`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch job post count");
+  }
+
+  return res.json();
+};

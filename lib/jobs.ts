@@ -37,6 +37,7 @@ export type JobForm = {
   applicants: number
   company: string
   salaryFrequency: string
+  userId?: string
 }
 
 /** A saved job post: the form data plus what the API/table adds. */
@@ -253,5 +254,6 @@ export function getFormData(job: JobPost): JobForm {
     applicants: job.applicants ?? 0,
     company: job.company ?? "",
     salaryFrequency: job.salaryFrequency ?? "per hour",
+    userId: job.userId,
   }
 }

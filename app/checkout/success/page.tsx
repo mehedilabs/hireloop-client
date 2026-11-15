@@ -13,6 +13,7 @@ export default async function CheckoutSuccessPage({
   if (!session_id) {
     throw new Error("Please provide a valid session_id (`cs_test_...`)")
   }
+
   const { status, payment_status, customer_email, metadata, payment_intent } =
     await stripe.checkout.sessions.retrieve(session_id, {
       expand: ["line_items", "payment_intent"],
@@ -22,9 +23,12 @@ export default async function CheckoutSuccessPage({
     return redirect("/")
   }
 
+  const isRecruiter = metadata?.plan === "recruiter"
+
   if (status === "complete" && payment_status === "paid") {
     const result = await checkoutVerify(session_id)
     console.log(result)
+
     return (
       <section
         id="success"
@@ -56,22 +60,42 @@ export default async function CheckoutSuccessPage({
           </div>
 
           {/* Heading */}
-          <p className="text-sm text-slate-400">Hireloop Premium</p>
+          <p className="text-sm text-slate-400">
+            {isRecruiter
+              ? "Hireloop Recruiter Premium"
+              : "Hireloop Seeker Premium"}
+          </p>
+
           <h1 className="mt-1 bg-gradient-to-r from-white via-indigo-100 to-[#a5a0ff] bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl">
             Payment Successful!
           </h1>
+
           <p className="mt-3 text-sm leading-relaxed text-slate-400 sm:text-base">
-            We appreciate your business! You can now apply for unlimited jobs
-            and continue your job search without interruption.
+            {isRecruiter
+              ? "Congratulations! Your Recruiter Premium plan is now active. Enjoy unlimited job postings and connect with the right talent to grow your team."
+              : "Congratulations! Your Seeker Premium plan is now active. Enjoy unlimited job applications and take the next step toward your dream career."}
           </p>
 
           {/* Info box */}
           <div className="mt-8 rounded-2xl border border-[#2a2a3d] bg-[#0b0b16]/60 p-4 text-left">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-400">Plan</span>
-              <span className="text-slate-200">Unlimited Applications</span>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-slate-400">Premium Plan</span>
+              <span className="text-right font-medium text-slate-200">
+                {isRecruiter ? "Recruiter Premium" : "Seeker Premium"}
+              </span>
             </div>
+
             <div className="my-3 h-px bg-[#2a2a3d]" />
+
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-slate-400">Benefits</span>
+              <span className="text-right text-slate-200">
+                {isRecruiter ? "Unlimited Job Posts" : "Unlimited Applications"}
+              </span>
+            </div>
+
+            <div className="my-3 h-px bg-[#2a2a3d]" />
+
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Status</span>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
@@ -79,6 +103,7 @@ export default async function CheckoutSuccessPage({
                 Paid
               </span>
             </div>
+
             {customer_email && (
               <>
                 <div className="my-3 h-px bg-[#2a2a3d]" />
@@ -95,11 +120,12 @@ export default async function CheckoutSuccessPage({
           {/* Buttons */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/dashboard/seeker"
+              href={isRecruiter ? "/dashboard/recruiter" : "/dashboard/seeker"}
               className="flex-1 rounded-xl bg-[#5a4ff5] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-[#5a4ff5]/30 transition hover:scale-[1.02] hover:bg-[#6c63ff] hover:shadow-[#5a4ff5]/50"
             >
               Go to Dashboard
             </Link>
+
             <Link
               href="/"
               className="flex-1 rounded-xl border border-[#2a2a3d] bg-white/5 px-5 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10"

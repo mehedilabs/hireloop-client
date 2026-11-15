@@ -1,9 +1,21 @@
 const CheckoutPage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ canceled?: string }>
+  searchParams: Promise<{
+    canceled?: string
+    plan?: string
+  }>
 }) => {
-  const { canceled } = await searchParams
+  const { canceled, plan } = await searchParams
+
+  const isRecruiter = plan === "recruiter"
+
+  const price = isRecruiter ? "49.00" : "20.00"
+  const heading = isRecruiter ? "Unlimited Job Posts" : "Unlimited Applications"
+
+  const description = isRecruiter
+    ? "Post more jobs and reach more qualified candidates."
+    : "Continue applying for jobs without the free application limit."
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#0b0b16] px-4 py-12">
@@ -14,8 +26,9 @@ const CheckoutPage = async ({
           </h1>
 
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-gray-400">
-            You have reached your free application limit. Upgrade your plan to
-            continue applying for jobs.
+            {isRecruiter
+              ? "You have reached your free job posting limit. Upgrade to continue posting jobs."
+              : "You have reached your free application limit. Upgrade your plan to continue applying for jobs."}
           </p>
         </div>
 
@@ -32,27 +45,39 @@ const CheckoutPage = async ({
               Hireloop Premium
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold text-white">
-              Unlimited Applications
-            </h2>
+            <h2 className="mt-2 text-2xl font-bold text-white">{heading}</h2>
 
-            <p className="mt-2 text-sm text-gray-400">
-              Continue applying for jobs without the free application limit.
-            </p>
+            <p className="mt-2 text-sm text-gray-400">{description}</p>
           </div>
 
           <div className="space-y-3 border-y border-white/10 py-5 text-sm text-gray-300">
-            <p>✓ Apply to unlimited jobs</p>
-            <p>✓ Access more career opportunities</p>
-            <p>✓ Continue your job search without interruption</p>
+            {isRecruiter ? (
+              <>
+                <p>✓ Post more job opportunities</p>
+                <p>✓ Reach more qualified candidates</p>
+                <p>✓ Grow your hiring opportunities</p>
+              </>
+            ) : (
+              <>
+                <p>✓ Apply to unlimited jobs</p>
+                <p>✓ Access more career opportunities</p>
+                <p>✓ Continue your job search without interruption</p>
+              </>
+            )}
           </div>
 
           <div className="mt-6">
             <p className="text-sm text-gray-400">One-time payment</p>
-            <p className="mt-1 text-4xl font-bold text-white">$20.00</p>
+            <p className="mt-1 text-4xl font-bold text-white">${price}</p>
           </div>
 
           <form action="/api/checkout_sessions" method="POST">
+            <input
+              type="hidden"
+              name="plan"
+              value={isRecruiter ? "recruiter" : "seeker"}
+            />
+
             <button
               type="submit"
               className="mt-6 flex h-12 w-full cursor-pointer items-center justify-center rounded-xl bg-[#5c53fe] font-semibold text-white transition-colors hover:bg-[#4940e8]"

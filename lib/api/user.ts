@@ -4,3 +4,15 @@ export const getUserPremiumById = async (userId: string) => {
   const response = await fetch(`${BASE_URL}/users/${userId}/premium`);
   return response.json();
 };
+
+
+export const getRecruiterPremiumById = async (userId: string) => {
+  const response = await fetch(`${BASE_URL}/users/${userId}/premium`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch recruiter premium status");
+  }
+
+  const result = await response.json();
+  return result?.recruiterPremium === true;
+};

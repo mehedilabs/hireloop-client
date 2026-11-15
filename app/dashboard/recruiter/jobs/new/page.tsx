@@ -35,7 +35,9 @@ import {
   type JobForm,
 } from "@/lib/jobs"
 import { selectContentClasses } from "@/app/components/form/styles"
-
+import { useSession } from "@/lib/auth-client"
+import { getJobPostCount } from "@/lib/actions/jobs"
+import { getRecruiterPremiumById } from "@/lib/api/user"
 // The single JobForm definition lives in @/lib/jobs; re-export it here so
 // existing imports from this page keep working.
 export type { JobForm }
@@ -97,6 +99,7 @@ function Field({
 }
 
 export default function NewJobPage() {
+  const { data: session } = useSession()
   const router = useRouter()
   const [form, setForm] = React.useState<JobForm>(initialForm)
   const [location, setLocation] = React.useState("")
@@ -119,6 +122,28 @@ export default function NewJobPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
+    const userId = session?.user?.id
+
+    if (!userId) {
+      toast.add({
+        title: "Login Required",
+        description: "Please login before posting a job.",
+        type: "error",
+      })
+      return
+    }
+
+    const isPremium = await getRecruiterPremiumById(userId)
+
+    if (!isPremium) {
+      const { count } = await getJobPostCount(userId)
+
+      if (count >= 3) {
+        router.push("/checkout?plan=recruiter")
+        return
+      }
+    }
+
     // single "Job Location" input -> city + country ("New York, USA")
     const [city, ...rest] = location.split(",")
 
@@ -126,6 +151,7 @@ export default function NewJobPage() {
       ...form,
       city: city.trim(),
       country: rest.join(",").trim(),
+      userId: session?.user?.id,
     })
 
     if (result?.acknowledged) {
