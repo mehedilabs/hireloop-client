@@ -151,7 +151,8 @@ export default function NewJobPage() {
       ...form,
       city: city.trim(),
       country: rest.join(",").trim(),
-      userId: session?.user?.id,
+      userId,
+      recruiterId: userId,
     })
 
     if (result?.acknowledged) {

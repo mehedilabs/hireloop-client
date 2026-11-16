@@ -38,6 +38,7 @@ export type JobForm = {
   company: string
   salaryFrequency: string
   userId?: string
+  recruiterId?: string
 }
 
 /** A saved job post: the form data plus what the API/table adds. */

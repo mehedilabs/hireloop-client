@@ -1,12 +1,14 @@
+"use server"
 
 import type { JobApplication } from "@/lib/types/applications"
+import { authFetch } from "@/lib/core/server"
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export const getMyApplications = async (
   applicantId: string
 ): Promise<JobApplication[]> => {
-  const res = await fetch(
+  const res = await authFetch(
     `${BASE_URL}/applications?applicantId=${applicantId}`
   )
 
@@ -20,7 +22,7 @@ export const getMyApplications = async (
 export const getApplicationsCount = async (
   applicantId: string
 ): Promise<{ count: number }> => {
-  const res = await fetch(
+  const res = await authFetch(
     `${BASE_URL}/applications/count?applicantId=${applicantId}`
   )
 
@@ -31,12 +33,10 @@ export const getApplicationsCount = async (
   return res.json()
 }
 
-
-
 export const getApplicationsByJobId = async (
   jobId: string
 ): Promise<JobApplication[]> => {
-  const res = await fetch(
+  const res = await authFetch(
     `${BASE_URL}/applications?jobId=${jobId}`
   )
 
