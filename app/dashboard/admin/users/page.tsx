@@ -1,10 +1,22 @@
-import { getUsers } from "@/lib/api/user"
-import React from "react"
+import { getUsers } from "@/lib/api/admin-users"
+import { getSession } from "@/lib/core/server"
+
+import UsersManager, { type AdminUser } from "./_components/users-manager"
 
 const AdminUsersPage = async () => {
-  const users = await getUsers()
-  console.log(users)
-  return <div></div>
+  const [result, session] = await Promise.all([getUsers(), getSession()])
+
+  const users: AdminUser[] = result.users.map((user) => ({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    image: user.image ?? null,
+    role: user.role ?? "seeker",
+    banned: Boolean(user.banned),
+    createdAt: new Date(user.createdAt).toISOString(),
+  }))
+
+  return <UsersManager users={users} currentUserId={session?.user.id} />
 }
 
 export default AdminUsersPage
