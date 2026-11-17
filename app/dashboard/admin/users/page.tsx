@@ -1,4 +1,4 @@
-import { getUsers } from "@/lib/api/admin-users"
+import { getUsers } from "@/lib/api/user"
 import { getSession } from "@/lib/core/server"
 
 import UsersManager, { type AdminUser } from "./_components/users-manager"
@@ -6,8 +6,8 @@ import UsersManager, { type AdminUser } from "./_components/users-manager"
 const AdminUsersPage = async () => {
   const [result, session] = await Promise.all([getUsers(), getSession()])
 
-  const users: AdminUser[] = result.users.map((user) => ({
-    id: user.id,
+  const users: AdminUser[] = result.map((user) => ({
+    id: user._id,
     name: user.name,
     email: user.email,
     image: user.image ?? null,
