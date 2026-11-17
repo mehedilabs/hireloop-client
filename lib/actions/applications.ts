@@ -1,6 +1,11 @@
-import type { ApplicationStatus } from "@/lib/types/applications"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+"use server"
+
+import type { ApplicationStatus } from "@/lib/types/applications"
+import { protectedMutation } from "../core/server"
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 type ApplyJobData = {
   jobId: string
@@ -10,37 +15,28 @@ type ApplyJobData = {
   companyName: string
 }
 
-export async function applyToAJob(data: ApplyJobData) {
-  const response = await fetch(`${BASE_URL}/applications`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  })
+export const applyToAJob = async (data: ApplyJobData) => {
+  const api = `${BASE_URL}/applications`
 
-  if (!response.ok) {
-    throw new Error("Failed to submit application")
+  const res = await protectedMutation(api, "POST", data)
+
+  if (!res.ok) {
+    throw new Error("Failed to apply for job")
   }
 
-  return response.json()
+  return res.json()
 }
-
-
 
 export const updateApplicationArchive = async (
   applicationId: string,
   isArchived: boolean
 ) => {
-  const response = await fetch(
-    `${BASE_URL}/applications/${applicationId}/archive`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ isArchived }),
-    }
+  const api = `${BASE_URL}/applications/${applicationId}/archive`
+
+  const response = await protectedMutation(
+    api,
+    "PATCH",
+    { isArchived }
   )
 
   if (!response.ok) {
@@ -50,22 +46,16 @@ export const updateApplicationArchive = async (
   return response.json()
 }
 
-
-
-
 export const updateApplicationStatus = async (
   applicationId: string,
   status: ApplicationStatus
 ) => {
-  const response = await fetch(
-    `${BASE_URL}/applications/${applicationId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    }
+  const api = `${BASE_URL}/applications/${applicationId}`
+
+  const response = await protectedMutation(
+    api,
+    "PATCH",
+    { status }
   )
 
   if (!response.ok) {

@@ -212,7 +212,7 @@ export default function SiteNavbar() {
 
           <SheetContent
             side="right"
-            className="flex w-[300px] flex-col gap-0 border-white/10 bg-[#161617] p-0 text-white sm:max-w-xs"
+            className="!flex !w-[300px] !flex-col !gap-0 !border-white/10 !bg-[#161617] !p-0 !text-white sm:!max-w-xs"
           >
             <SheetHeader className="border-b border-white/10 px-6 py-5 text-left">
               <SheetTitle className="text-white">

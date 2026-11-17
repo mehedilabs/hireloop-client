@@ -1,13 +1,21 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+"use server"
+
+import { protectedMutation } from "../core/server"
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export const checkoutVerify = async (sessionId: string) => {
-  const response = await fetch(`${BASE_URL}/payments/checkout-verify`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ sessionId }),
-  });
+  const response = await protectedMutation(
+    `${BASE_URL}/payments/checkout-verify`,
+    "POST",
+    { sessionId }
+  )
 
-  return response.json();
-};
+  if (!response.ok) {
+    throw new Error("Payment verification failed")
+  }
+
+  return response.json()
+}

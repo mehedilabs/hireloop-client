@@ -1,7 +1,11 @@
 
-import type { JobPost } from "@/lib/jobs"
+"use server"
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+import type { JobPost } from "@/lib/jobs"
+import { authFetch } from "@/lib/core/server"
+
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 export type SavedJob = {
   _id: string
@@ -12,9 +16,9 @@ export type SavedJob = {
 }
 
 export const getMySavedJobs = async (
-  userId: string
+  _userId: string
 ): Promise<SavedJob[]> => {
-  const res = await fetch(`${BASE_URL}/saved-jobs?userId=${userId}`)
+  const res = await authFetch(`${BASE_URL}/saved-jobs`)
 
   if (!res.ok) {
     throw new Error("Failed to fetch saved jobs")

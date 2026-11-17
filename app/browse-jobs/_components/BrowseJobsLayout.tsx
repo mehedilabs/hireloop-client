@@ -68,6 +68,7 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
   const { data: session, isPending: isSessionPending } = authClient.useSession()
 
   const userId = session?.user?.id
+  const userRole = session?.user?.role
 
   const [savedJobs, setSavedJobs] = React.useState<SavedJob[]>([])
   const [savingJobId, setSavingJobId] = React.useState<string | null>(null)
@@ -89,7 +90,7 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
   React.useEffect(() => {
     if (isSessionPending) return
 
-    if (!userId) return
+    if (!userId || userRole !== "seeker") return
 
     let isActive = true
 
@@ -111,7 +112,7 @@ export function BrowseJobsLayout({ initialJobs }: BrowseJobsLayoutProps) {
     return () => {
       isActive = false
     }
-  }, [userId, isSessionPending])
+  }, [userId, userRole, isSessionPending])
 
   // Save or remove a job from saved jobs
   const handleSaveToggle = async (job: JobPost) => {
